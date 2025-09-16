@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+{% block title %}Nueva Publicación{% endblock %}
+{% block content %}
+<h1>Nueva Publicación</h1>
+<form method="post" class="form">
+  <label>Título
+    <input type="text" name="title" required />
+  </label>
+  <label>Contenido
+    <textarea name="content" rows="10" required></textarea>
+  </label>
+  <button type="submit">Publicar</button>
+</form>
+{% endblock %}

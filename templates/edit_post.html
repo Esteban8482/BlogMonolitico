@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+{% block title %}Editar Publicación{% endblock %}
+{% block content %}
+<h1>Editar Publicación</h1>
+<form method="post" class="form">
+  <label>Título
+    <input type="text" name="title" value="{{ post.title }}" required />
+  </label>
+  <label>Contenido
+    <textarea name="content" rows="10" required>{{ post.content }}</textarea>
+  </label>
+  <button type="submit">Guardar</button>
+  <a href="{{ url_for('post_detail', post_id=post.id) }}">Cancelar</a>
+</form>
+{% endblock %}
