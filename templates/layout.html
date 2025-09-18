@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <title>{% block title %}Blog{% endblock %}</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
+
 <body>
   <nav class="navbar">
     <div class="nav-left"><a href="{{ url_for('index') }}" class="brand">MiniBlog</a></div>
@@ -14,27 +16,28 @@
         <input type="text" name="q" placeholder="Buscar..." value="{{ q or '' }}" />
       </form>
       {% if current_user %}
-        <a href="{{ url_for('create_post') }}">Nueva Publicación</a>
-        <a href="{{ url_for('profile', username=current_user.username) }}">Perfil</a>
-        <a href="{{ url_for('logout') }}">Salir</a>
+      <a href="{{ url_for('post.create_post') }}">Nueva Publicación</a>
+      <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
+      <a href="{{ url_for('login.logout') }}">Salir</a>
       {% else %}
-        <a href="{{ url_for('login') }}">Entrar</a>
-        <a href="{{ url_for('register') }}">Registro</a>
+      <a href="{{ url_for('login.login') }}">Entrar</a>
+      <a href="{{ url_for('login.register') }}">Registro</a>
       {% endif %}
     </div>
   </nav>
   <main class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul class="flashes">
-          {% for cat,msg in messages %}
-            <li class="flash {{ cat }}">{{ msg }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+    {% if messages %}
+    <ul class="flashes">
+      {% for cat,msg in messages %}
+      <li class="flash {{ cat }}">{{ msg }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
   </main>
   <footer class="footer">&copy; {{ now.year }} MiniBlog</footer>
 </body>
+
 </html>

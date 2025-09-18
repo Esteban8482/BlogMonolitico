@@ -10,6 +10,6 @@
     <textarea name="content" rows="10" required>{{ post.content }}</textarea>
   </label>
   <button type="submit">Guardar</button>
-  <a href="{{ url_for('post_detail', post_id=post.id) }}">Cancelar</a>
+  <a href="{{ url_for('post.post_detail', post_id=post.id) }}">Cancelar</a>
 </form>
 {% endblock %}
