@@ -53,10 +53,11 @@ def create_app():
 
 app = create_app()
 
-
 # =============================
 # RUTAS PRINCIPALES DE POSTS
 # =============================
+
+
 @app.route("/")
 def index():
     q = request.args.get("q", "").strip()
@@ -95,9 +96,14 @@ def inject_globals():
 
 
 def ensure_db():
+    print("Verificando base de datos...")
+
     if not os.path.exists(DB_PATH):
+        print("Creando base de datos...")
+
         with app.app_context():
             db.create_all()
+            print("Base de datos creada en", DB_PATH)
 
 
 if __name__ == "__main__":
