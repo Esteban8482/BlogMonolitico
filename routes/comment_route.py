@@ -29,7 +29,10 @@ def add_comment(post_id: int):
 @login_required
 def delete_comment(comment_id: int):
     comment = Comment.query.get_or_404(comment_id)
-    if comment.author.id != current_user().id and comment.post.author.id != current_user().id:
+    if (
+        comment.author.id != current_user().id
+        and comment.post.author.id != current_user().id
+    ):
         abort(403)
     post_id = comment.post.id
     db.session.delete(comment)

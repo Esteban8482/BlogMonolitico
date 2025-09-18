@@ -36,13 +36,13 @@ def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = os.environ.get(
-        "BLOG_SECRET_KEY", secrets.token_hex(16))
+    app.config["SECRET_KEY"] = os.environ.get("BLOG_SECRET_KEY", secrets.token_hex(16))
 
     db.init_app(app)
 
     # registrar Blueprints
     from routes import login_route, post_route, comment_route, user_route
+
     app.register_blueprint(login_route)
     app.register_blueprint(post_route)
     app.register_blueprint(comment_route)
@@ -62,10 +62,11 @@ app = create_app()
 def index():
     q = request.args.get("q", "").strip()
     query = Post.query.order_by(Post.created_at.desc())
+
     if q:
         like = f"%{q}%"
-        query = query.filter((Post.title.ilike(like)) |
-                             (Post.content.ilike(like)))
+        query = query.filter((Post.title.ilike(like)) | (Post.content.ilike(like)))
+
     posts = query.limit(25).all()
     return render_template("index.html", posts=posts, q=q, user=current_user())
 

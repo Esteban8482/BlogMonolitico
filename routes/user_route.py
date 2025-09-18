@@ -21,6 +21,9 @@ def profile(username: str):
         db.session.commit()
         flash("Perfil actualizado", "success")
         return redirect(url_for("user.profile", username=user.username))
-    posts = Post.query.filter_by(author=user).order_by(
-        Post.created_at.desc()).all()
-    return render_template("profile.html", profile_user=user, posts=posts, user=current_user())
+
+    posts = Post.query.filter_by(author=user).order_by(Post.created_at.desc()).all()
+
+    return render_template(
+        "profile.html", profile_user=user, posts=posts, user=current_user()
+    )

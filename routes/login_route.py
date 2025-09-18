@@ -20,7 +20,9 @@ def register():
             flash("Completa todos los campos", "danger")
         elif password != confirm:
             flash("Las contraseñas no coinciden", "danger")
-        elif User.query.filter((User.username == username) | (User.email == email)).first():
+        elif User.query.filter(
+            (User.username == username) | (User.email == email)
+        ).first():
             flash("Usuario o correo ya existe", "danger")
         else:
             user = User(username=username, email=email)
@@ -38,8 +40,8 @@ def login():
         username_or_email = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = User.query.filter(
-            (User.username == username_or_email) | (
-                User.email == username_or_email.lower())
+            (User.username == username_or_email)
+            | (User.email == username_or_email.lower())
         ).first()
         if not user or not user.check_password(password):
             flash("Credenciales inválidas", "danger")
