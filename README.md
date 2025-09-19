@@ -5,14 +5,12 @@
 - Python 3.8+
 - Pip
 
-### Instalación
+### Instalación y configuración manual
 
 ```bash
 # Crear un entorno virtual
 virtualenv -p python3 venv
 source venv/bin/activate
-
-# Instalar dependencias
 pip install -r requirements.txt
 ```
 
@@ -24,7 +22,13 @@ python app.py
 
 Por defecto, la aplicación se ejecuta en `http://localhost:5000`
 
-## Formato de código
+## Tests
+
+```bash
+pytest
+```
+
+## Formato de código (opcional)
 
 Para formatear el código, se utiliza el linter `black`. Para instalarlo, instalar el requirements.txt o ejecutar:
 
@@ -38,7 +42,17 @@ Luego, se puede formatear el código con el siguiente comando:
 black .
 ```
 
-## Formato automático:
+### Extensiones recomendadas
+
+- [Black](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter)
+
+## prettier (opcional) para formato automático de HTML, CSS y JS
+
+### Extensiones recomendadas
+
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+
+## Formato automático (opcional):
 
 Commits:
 
@@ -48,7 +62,7 @@ pre-commit install
 
 VS Code tiene integrado el formateador `black` y se puede configurar en el archivo `.vscode/settings.json` usando la extensión `ms-python.black-formatter`.
 
-## Commits
+## Commits (opcional)
 
 Para crear un commit, se debe seguir el siguiente formato:
 
