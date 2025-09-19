@@ -3,14 +3,14 @@ from db_connector import User, Post, Comment
 from db_connector import db
 from helpers import current_user, login_required
 
-comment_route = Blueprint("comment", __name__)
+comment_api = Blueprint("comment", __name__)
 
 # =============================
 # RUTAS DE COMENTARIOS
 # =============================
 
 
-@comment_route.route("/post/<int:post_id>/comment", methods=["POST"])
+@comment_api.route("/post/<int:post_id>/comment", methods=["POST"])
 @login_required
 def add_comment(post_id: int):
     post = Post.query.get_or_404(post_id)
@@ -25,7 +25,7 @@ def add_comment(post_id: int):
     return redirect(url_for("post.post_detail", post_id=post.id))
 
 
-@comment_route.route("/comment/<int:comment_id>/delete", methods=["POST"])
+@comment_api.route("/comment/<int:comment_id>/delete", methods=["POST"])
 @login_required
 def delete_comment(comment_id: int):
     comment = Comment.query.get_or_404(comment_id)

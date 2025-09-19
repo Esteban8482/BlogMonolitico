@@ -26,7 +26,7 @@ Por defecto, la aplicación se ejecuta en `http://localhost:5000`
 
 ## Formato de código
 
-Para formatear el código, se utiliza el linter `black`. Para instalarlo, ejecutar:
+Para formatear el código, se utiliza el linter `black`. Para instalarlo, instalar el requirements.txt o ejecutar:
 
 ```bash
 pip install black

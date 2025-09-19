@@ -2,14 +2,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_connector import User
 from db_connector import db
 
-login_route = Blueprint("login", __name__)
+login_api = Blueprint("login", __name__)
 
 # =============================
 # RUTAS DE AUTENTICACIÓN
 # =============================
 
 
-@login_route.route("/register", methods=["GET", "POST"])
+@login_api.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -34,7 +34,7 @@ def register():
     return render_template("register.html")
 
 
-@login_route.route("/login", methods=["GET", "POST"])
+@login_api.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username_or_email = request.form.get("username", "").strip()
@@ -53,7 +53,7 @@ def login():
     return render_template("login.html")
 
 
-@login_route.route("/logout")
+@login_api.route("/logout")
 def logout():
     session.pop("user_id", None)
     flash("Sesión cerrada", "info")
