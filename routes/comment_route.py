@@ -1,7 +1,22 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from db_connector import User, Post, Comment
-from db_connector import db
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    abort,
+)
+
 from helpers import current_user, login_required
+from services.comment_service import (
+    create_comment,
+    get_comment_or_404,
+    delete_comment,
+    is_comment_owner_or_post_owner,
+)
+from services.post_service import get_post_or_404
 
 comment_api = Blueprint("comment", __name__)
 
@@ -13,29 +28,27 @@ comment_api = Blueprint("comment", __name__)
 @comment_api.route("/post/<int:post_id>/comment", methods=["POST"])
 @login_required
 def add_comment(post_id: int):
-    post = Post.query.get_or_404(post_id)
+    post = get_post_or_404(post_id)
     content = request.form.get("content", "").strip()
+
     if not content:
         flash("Comentario vacío", "danger")
     else:
-        comment = Comment(content=content, author=current_user(), post=post)
-        db.session.add(comment)
-        db.session.commit()
+        create_comment(post_id, content)
         flash("Comentario agregado", "success")
+
     return redirect(url_for("post.post_detail", post_id=post.id))
 
 
 @comment_api.route("/comment/<int:comment_id>/delete", methods=["POST"])
 @login_required
-def delete_comment(comment_id: int):
-    comment = Comment.query.get_or_404(comment_id)
-    if (
-        comment.author.id != current_user().id
-        and comment.post.author.id != current_user().id
-    ):
+def delete_comment_view(comment_id: int):
+    comment = get_comment_or_404(comment_id)
+
+    if not is_comment_owner_or_post_owner(comment):
         abort(403)
+
     post_id = comment.post.id
-    db.session.delete(comment)
-    db.session.commit()
+    delete_comment(comment)
     flash("Comentario eliminado", "info")
     return redirect(url_for("post.post_detail", post_id=post_id))
