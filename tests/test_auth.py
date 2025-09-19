@@ -31,18 +31,37 @@ def test_register_existing_user(mock_query, client):
     assert "Usuario o correo ya existe" in response.get_data(as_text=True)
 
 
-@patch("routes.login_route.db.session")
-@patch("routes.login_route.User.query")
-def test_register_success(mock_query, mock_session, client):
-    mock_query.filter.return_value.first.return_value = None
+@patch("routes.login_route.register_user")
+def test_register_success(mock_register_user, client):
+    user = type("User", (), {"id": 1})()
+    mock_register_user.return_value = user
+
     data = {
         "username": "newuser",
         "email": "new@example.com",
         "password": "123456",
         "confirm": "123456",
     }
+
     response = client.post("/register", data=data, follow_redirects=True)
+
     assert "Registro exitoso" in response.get_data(as_text=True)
+    mock_register_user.assert_called_once_with("newuser", "new@example.com", "123456")
+
+
+@patch("routes.login_route.register_user")
+def test_register_user_exists(mock_register_user, client):
+    mock_register_user.return_value = None  # Simula fallo por usuario duplicado
+
+    data = {
+        "username": "existing",
+        "email": "existing@example.com",
+        "password": "123456",
+        "confirm": "123456",
+    }
+
+    response = client.post("/register", data=data, follow_redirects=True)
+    assert "Usuario o correo ya existe" in response.get_data(as_text=True)
 
 
 @patch("routes.login_route.User.query")
@@ -53,14 +72,16 @@ def test_login_invalid_credentials(mock_query, client):
     assert "Credenciales inválidas" in response.get_data(as_text=True)
 
 
-@patch("routes.login_route.User.query")
-def test_login_success(mock_query, client):
-    user = User(id=1, username="test", email="test@example.com")
-    user.check_password = lambda pwd: pwd == "123456"
-    mock_query.filter.return_value.first.return_value = user
+@patch("routes.login_route.authenticate_user")
+def test_login_success(mock_authenticate_user, client):
+    user = type("User", (), {"id": 1})()  # objeto simulado
+    mock_authenticate_user.return_value = user
+
     data = {"username": "test", "password": "123456"}
     response = client.post("/login", data=data, follow_redirects=True)
+
     assert "Bienvenido de nuevo" in response.get_data(as_text=True)
+    mock_authenticate_user.assert_called_once_with("test", "123456")
 
 
 def test_logout(client):
