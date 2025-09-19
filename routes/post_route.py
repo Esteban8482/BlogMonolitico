@@ -2,14 +2,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_connector import Post, db
 from helpers import current_user, login_required
 
-post_route = Blueprint("post", __name__)
+post_api = Blueprint("post", __name__)
 
 # =============================
 # RUTAS PRINCIPALES DE POSTS
 # =============================
 
 
-@post_route.route("/post/new", methods=["GET", "POST"])
+@post_api.route("/post/new", methods=["GET", "POST"])
 @login_required
 def create_post():
     if request.method == "POST":
@@ -31,13 +31,13 @@ def _require_post_owner(post: Post):
         abort(403)
 
 
-@post_route.route("/post/<int:post_id>")
+@post_api.route("/post/<int:post_id>")
 def post_detail(post_id: int):
     post = Post.query.get_or_404(post_id)
     return render_template("post_detail.html", post=post, user=current_user())
 
 
-@post_route.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
+@post_api.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_post(post_id: int):
     post = Post.query.get_or_404(post_id)
@@ -56,7 +56,7 @@ def edit_post(post_id: int):
     return render_template("edit_post.html", post=post)
 
 
-@post_route.route("/post/<int:post_id>/delete", methods=["POST"])
+@post_api.route("/post/<int:post_id>/delete", methods=["POST"])
 @login_required
 def delete_post(post_id: int):
     post = Post.query.get_or_404(post_id)
