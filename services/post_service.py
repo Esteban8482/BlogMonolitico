@@ -1,4 +1,4 @@
-from db_connector import db, Post
+from db_connector import db, Post, User
 from typing import Optional, List
 
 
@@ -31,3 +31,7 @@ def update_post(post: Post, title: str, content: str) -> None:
 def delete_post(post: Post) -> None:
     db.session.delete(post)
     db.session.commit()
+
+
+def get_user_posts(user: User) -> List[Post]:
+    return Post.query.filter_by(author=user).order_by(Post.created_at.desc()).all()
