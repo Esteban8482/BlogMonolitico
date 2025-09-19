@@ -2,7 +2,7 @@ from flask import session, flash, redirect, url_for, request
 from functools import wraps
 from typing import Optional
 
-from db_connector import User
+from db_connector import User, db
 
 # =============================
 # UTILS / AUTH HELPERS
@@ -15,7 +15,7 @@ def current_user() -> Optional[User]:
     if uid is None:
         return None
 
-    return User.query.get(uid)
+    return db.session.get(User, uid)
 
 
 def login_required(fn):

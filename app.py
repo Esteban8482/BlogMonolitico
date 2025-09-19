@@ -26,9 +26,12 @@ from helpers import current_user
 from config import Config, DB_PATH
 
 
-def create_app():
+def create_app(config_override=None):
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    if config_override:
+        app.config.update(config_override)
 
     db.init_app(app)
 
