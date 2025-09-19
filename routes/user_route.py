@@ -1,7 +1,16 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from db_connector import User, Post, Comment
-from db_connector import db
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    abort,
+)
 from helpers import current_user, login_required
+from services.user_service import get_user_or_404, update_user_bio, is_user_owner
+from services.post_service import get_user_posts
 
 user_api = Blueprint("user", __name__)
 
@@ -11,21 +20,21 @@ user_api = Blueprint("user", __name__)
 
 
 @user_api.route("/u/<username>", methods=["GET", "POST"])
+@login_required
 def profile(username: str):
-    user = User.query.filter_by(username=username).first_or_404()
+    user = get_user_or_404(username)
 
     if request.method == "POST":
-        if not current_user() or current_user().id != user.id:
+        if not is_user_owner(user, current_user()):
             abort(403)
 
         bio = request.form.get("bio", "")
-        user.bio = bio
-        db.session.commit()
+        update_user_bio(user, bio)
         flash("Perfil actualizado", "success")
 
         return redirect(url_for("user.profile", username=user.username))
 
-    posts = Post.query.filter_by(author=user).order_by(Post.created_at.desc()).all()
+    posts = get_user_posts(user)
 
     return render_template(
         "profile.html", profile_user=user, posts=posts, user=current_user()
