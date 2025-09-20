@@ -22,6 +22,17 @@ python app.py
 
 Por defecto, la aplicación se ejecuta en `http://localhost:5000`
 
+## Ejecución micro-servicio
+
+### Usuario
+
+```bash
+cd microservices/user
+python app.py
+```
+
+Puerto por defecto: `5002`
+
 ## Tests
 
 ```bash
