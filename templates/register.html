@@ -2,18 +2,12 @@
 {% block title %}Registro{% endblock %}
 {% block content %}
 <h1>Crear cuenta</h1>
-<form method="post" class="form">
-  <label>Usuario
-    <input type="text" name="username" required />
-  </label>
+<form id="register-form" class="form">
   <label>Email
     <input type="email" name="email" required />
   </label>
   <label>Contraseña
     <input type="password" name="password" required />
-  </label>
-  <label>Confirmar
-    <input type="password" name="confirm" required />
   </label>
   <button type="submit">Registrarme</button>
 </form>
