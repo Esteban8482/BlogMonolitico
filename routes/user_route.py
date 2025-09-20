@@ -11,8 +11,8 @@ from flask import (
 import requests
 
 from helpers import current_user, login_required
-from services.user_service import get_user_or_404, update_user_bio, is_user_owner
 from services.post_service import get_user_posts, get_user_posts_by_id
+
 from dtos import UserDto
 from config import ServicesConfig
 
