@@ -22,6 +22,8 @@ user_api = Blueprint("user", __name__)
 
 @user_api.route("/u/<username>", methods=["GET", "POST"])
 def profile(username: str):
+    print(f"======== Obteniendo perfil {username} ========")
+
     user_id = request.headers.get("X-User-ID")
 
     print(f"======== id {user_id} ========")
@@ -35,13 +37,25 @@ def profile(username: str):
     print(f"======== user {user} ========")
 
     if request.method == "POST":
+        data = request.get_json()
+        print(f"======== profile POST {data} ========")
+
         if user.id != int(user_id):
             abort(403)
 
-        bio = request.form.get("bio", "")
+        bio = data.get("bio", "")
         update_user_bio(user, bio)
 
-        return jsonify({"success": True, "message": "Perfil actualizado"}), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": "Perfil actualizado",
+                    "profile_user": user.to_json(),
+                }
+            ),
+            200,
+        )
 
     return jsonify({"success": True, "profile_user": user.to_json()}), 200
 

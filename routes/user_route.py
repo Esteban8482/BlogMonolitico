@@ -8,9 +8,13 @@ from flask import (
     session,
     abort,
 )
+import requests
+
 from helpers import current_user, login_required
 from services.user_service import get_user_or_404, update_user_bio, is_user_owner
-from services.post_service import get_user_posts
+from services.post_service import get_user_posts, get_user_posts_by_id
+from dtos import UserDto
+from config import ServicesConfig
 
 user_api = Blueprint("user", __name__)
 
@@ -22,20 +26,39 @@ user_api = Blueprint("user", __name__)
 @user_api.route("/u/<username>", methods=["GET", "POST"])
 @login_required
 def profile(username: str):
-    user = get_user_or_404(username)
+    if request.method == "GET":
+        # micro-servicio de usuario
+        user_req = requests.get(
+            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
+            headers={"X-User-ID": str(current_user().id)},
+        )
 
-    if request.method == "POST":
-        if not is_user_owner(user, current_user()):
-            abort(403)
+        if user_req.status_code != 200:
+            abort(404)
 
-        bio = request.form.get("bio", "")
-        update_user_bio(user, bio)
-        flash("Perfil actualizado", "success")
+        user = UserDto.from_json(user_req.json()["profile_user"])
+        print(f"======== profile user {user} ========")
+        posts = get_user_posts_by_id(user.id)
 
-        return redirect(url_for("user.profile", username=user.username))
+        return render_template(
+            "profile.html",
+            profile_user=user,
+            posts=posts,
+            user=current_user(),
+        )
+    elif request.method == "POST":
+        # micro-servicio de usuario
+        print(f"======== profile POST {request.form} ========")
 
-    posts = get_user_posts(user)
+        post_req = requests.post(
+            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
+            headers={"X-User-ID": str(current_user().id)},
+            json={"bio": request.form.get("bio", "")},
+        )
 
-    return render_template(
-        "profile.html", profile_user=user, posts=posts, user=current_user()
-    )
+        if post_req.status_code == 200:
+            flash("Perfil actualizado", "success")
+        else:
+            flash("Error al actualizar el perfil", "error")
+
+        return redirect(url_for("user.profile", username=username))
