@@ -11,3 +11,7 @@ class Config:
     SECRET_KEY = (
         os.environ.get("USER_SECRET_KEY", secrets.token_hex(16)) or "super-secret-key"
     )
+
+
+class ServicesConfig:
+    USER_SERVICE_URL = os.environ.get("USER_SERVICE_URL", "http://localhost:5002")

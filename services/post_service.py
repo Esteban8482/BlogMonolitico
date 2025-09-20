@@ -47,3 +47,7 @@ def delete_post(post: Post) -> None:
 
 def get_user_posts(user: User) -> List[Post]:
     return Post.query.filter_by(author=user).order_by(Post.created_at.desc()).all()
+
+
+def get_user_posts_by_id(user_id: int) -> List[Post]:
+    return Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).all()

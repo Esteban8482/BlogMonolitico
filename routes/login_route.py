@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_connector import User
 from db_connector import db
 from services.auth_service import register_user, authenticate_user
+import requests
+from config import ServicesConfig
 
 login_api = Blueprint("login", __name__)
 
@@ -22,9 +24,25 @@ def register():
             flash("Completa todos los campos", "danger")
         elif password != confirm:
             flash("Las contraseñas no coinciden", "danger")
-        elif not register_user(username, email, password):
-            flash("Usuario o correo ya existe", "danger")
         else:
+            reg_user = register_user(username, email, password)
+
+            if not reg_user:
+                flash(
+                    "Usuario o correo ya existe o error al crear el usuario", "danger"
+                )
+                return redirect(url_for("login.register"))
+
+            # registrar usuarios en el microservicio de usuario
+            user_req = requests.post(
+                f"{ServicesConfig.USER_SERVICE_URL}/u/new",
+                json={"id": reg_user.id, "username": username},
+            )
+
+            if user_req.status_code != 200:
+                flash("Error al crear el usuario en el microservicio", "danger")
+                return redirect(url_for("login.register"))
+
             flash("Registro exitoso. Inicia sesión.", "success")
             return redirect(url_for("login.login"))
 
