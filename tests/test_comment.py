@@ -15,8 +15,8 @@ def remove_decorators(client):
         "comment.add_comment"
     ] = comment_route.add_comment.__wrapped__
     client.application.view_functions[
-        "comment.delete_comment_view"
-    ] = comment_route.delete_comment_view.__wrapped__
+        "comment.delete_comment"
+    ] = comment_route.delete_comment.__wrapped__
 
 
 @patch("routes.comment_route.create_comment")
@@ -86,7 +86,7 @@ def test_add_comment_no_login(mock_user, mock_create, mock_get, client):
 
 
 @patch("routes.comment_route.is_comment_owner_or_post_owner")
-@patch("routes.comment_route.delete_comment")
+@patch("routes.comment_route.delete_comment_service")
 @patch("routes.comment_route.get_comment_or_404")
 @patch("routes.comment_route.current_user")
 def test_delete_comment_success(
@@ -118,7 +118,7 @@ def test_delete_comment_success(
 
 
 @patch("routes.comment_route.is_comment_owner_or_post_owner")
-@patch("routes.comment_route.delete_comment")
+@patch("routes.comment_route.delete_comment_service")
 @patch("routes.comment_route.get_comment_or_404")
 @patch("routes.comment_route.current_user")
 def test_delete_comment_not_owner(

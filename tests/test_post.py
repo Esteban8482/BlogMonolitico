@@ -18,8 +18,8 @@ def remove_decorators(client):
         "post.edit_post"
     ] = post_route.edit_post.__wrapped__
     client.application.view_functions[
-        "post.delete_post_view"
-    ] = post_route.delete_post_view.__wrapped__
+        "post.delete_post"
+    ] = post_route.delete_post.__wrapped__
 
 
 def test_create_post_success(client):
@@ -30,7 +30,7 @@ def test_create_post_success(client):
     # Mockea funciones internas
     with (
         patch("routes.post_route.current_user") as mock_user,
-        patch("routes.post_route.create_post") as mock_create,
+        patch("routes.post_route.create_post_service") as mock_create,
     ):
         mock_user.return_value = type("User", (), {"id": 1})()
         mock_create.return_value = type("Post", (), {"id": 123})()
@@ -145,7 +145,7 @@ def test_delete_post_success(client):
     with (
         patch("routes.post_route.current_user") as mock_user,
         patch("routes.post_route.get_post_or_404") as mock_get,
-        patch("routes.post_route.delete_post") as mock_delete,
+        patch("routes.post_route.delete_post_service") as mock_delete,
     ):
         # Usuario actual es ID 1
         mock_user.return_value = type("User", (), {"id": 1})()
@@ -175,7 +175,7 @@ def test_delete_post_not_owner(client):
     with (
         patch("routes.post_route.current_user") as mock_user,
         patch("routes.post_route.get_post_or_404") as mock_get,
-        patch("routes.post_route.delete_post") as mock_delete,
+        patch("routes.post_route.delete_post_service") as mock_delete,
     ):
         # Usuario actual es ID 2
         mock_user.return_value = type("User", (), {"id": 2})()

@@ -25,6 +25,7 @@ Por defecto, la aplicación se ejecuta en `http://localhost:5000`
 ## Tests
 
 ```bash
+pip install pytest
 pytest
 ```
 

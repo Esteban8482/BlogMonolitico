@@ -1,3 +1,14 @@
+"""
+Comment Service
+
+Desacoplar la lógica de autenticación de usuarios de la aplicación con los endpoints
+
+- Agregar comentario
+- Obtener comentario por ID
+- Eliminar comentario
+- Verificar si el comentario pertenece al autor del post
+"""
+
 from db_connector import db, Comment, Post
 from helpers import current_user
 from flask import abort
