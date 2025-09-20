@@ -33,10 +33,17 @@ def profile(username: str):
             headers={"X-User-ID": str(current_user().id)},
         )
 
+        print(f"======== profile user {user_req} ========")
+
         if user_req.status_code != 200:
             abort(404)
 
-        user = UserDto.from_json(user_req.json()["profile_user"])
+        try:
+            user = UserDto.from_json(user_req.json()["profile_user"])
+        except Exception as e:
+            print(f"======== failed to parse user {e} ========")
+            abort(404)
+
         print(f"======== profile user {user} ========")
         posts = get_user_posts_by_id(user.id)
 
