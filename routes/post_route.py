@@ -12,10 +12,10 @@ from flask import (
 from db_connector import Post
 from helpers import current_user, login_required
 from services.post_service import (
-    create_post,
+    create_post as create_post_service,
     get_post_or_404,
     update_post,
-    delete_post,
+    delete_post as delete_post_service,
 )
 
 post_api = Blueprint("post", __name__)
@@ -35,7 +35,7 @@ def create_post():
         if not title or not content:
             flash("Título y contenido requeridos", "danger")
         else:
-            post = create_post(title, content, current_user().id)
+            post = create_post_service(title, content, current_user().id)
             flash("Publicación creada", "success")
             return redirect(url_for("post.post_detail", post_id=post.id))
 
@@ -75,10 +75,10 @@ def edit_post(post_id: int):
 
 @post_api.route("/post/<int:post_id>/delete", methods=["POST"])
 @login_required
-def delete_post_view(post_id: int):
+def delete_post(post_id: int):
     post = get_post_or_404(post_id)
     _require_post_owner(post)
-    delete_post(post)
+    delete_post_service(post)
 
     flash("Publicación eliminada", "info")
     return redirect(url_for("index"))

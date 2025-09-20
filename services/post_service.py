@@ -1,3 +1,15 @@
+"""
+Post Service
+
+Desacoplar la lógica de autenticación de usuarios de la aplicación con los endpoints
+
+- Crear post
+- Obtener post por ID
+- Actualizar post
+- Eliminar post
+- Obtener posts de un usuario
+"""
+
 from db_connector import db, Post, User
 from typing import Optional, List
 

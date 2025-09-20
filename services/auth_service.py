@@ -1,4 +1,13 @@
-# services/auth_service.py
+"""
+Auth Service
+
+Desacoplar la lógica de autenticación de usuarios de la aplicación con los endpoints
+
+- Registro de usuario
+- Autenticación de usuario
+- Obtención de usuario por ID
+"""
+
 from db_connector import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Optional

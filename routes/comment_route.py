@@ -13,7 +13,7 @@ from helpers import current_user, login_required
 from services.comment_service import (
     create_comment,
     get_comment_or_404,
-    delete_comment,
+    delete_comment as delete_comment_service,
     is_comment_owner_or_post_owner,
 )
 from services.post_service import get_post_or_404
@@ -42,13 +42,13 @@ def add_comment(post_id: int):
 
 @comment_api.route("/comment/<int:comment_id>/delete", methods=["POST"])
 @login_required
-def delete_comment_view(comment_id: int):
+def delete_comment(comment_id: int):
     comment = get_comment_or_404(comment_id)
 
     if not is_comment_owner_or_post_owner(comment):
         abort(403)
 
     post_id = comment.post.id
-    delete_comment(comment)
+    delete_comment_service(comment)
     flash("Comentario eliminado", "info")
     return redirect(url_for("post.post_detail", post_id=post_id))
