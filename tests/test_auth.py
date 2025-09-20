@@ -32,9 +32,12 @@ def test_register_existing_user(mock_query, client):
 
 
 @patch("routes.login_route.register_user")
-def test_register_success(mock_register_user, client):
+@patch("routes.login_route.requests")
+def test_register_success(mock_req, mock_register_user, client):
     user = type("User", (), {"id": 1})()
     mock_register_user.return_value = user
+    # requests al microservicio de usuario
+    mock_req.post.return_value.status_code = 200
 
     data = {
         "username": "newuser",
