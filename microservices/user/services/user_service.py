@@ -19,9 +19,10 @@ def get_user_or_404(user_id_or_name: int | str) -> Optional[User]:
     return User.query.filter(User.username == user_id_or_name).first()
 
 
-def update_user_bio(user: User, bio: str) -> None:
+def update_user_bio(user: User, bio: str) -> User:
     user.bio = bio
     db.session.commit()
+    return user
 
 
 def create_user(id: int, username: str) -> User:

@@ -25,14 +25,15 @@ def profile(username: str):
     print(f"======== Obteniendo perfil {username} ========")
 
     user_id = request.headers.get("X-User-ID")
-
-    print(f"======== id {user_id} ========")
-    print(f"======== username {username} ========")
+    print(f"======== id req {user_id} ========")
 
     if not user_id:
         abort(403)
 
     user = get_user_or_404(username)
+
+    if not user:
+        abort(404)
 
     print(f"======== user {user} ========")
 
@@ -44,14 +45,14 @@ def profile(username: str):
             abort(403)
 
         bio = data.get("bio", "")
-        update_user_bio(user, bio)
+        user_updated = update_user_bio(user, bio)
 
         return (
             jsonify(
                 {
                     "success": True,
                     "message": "Perfil actualizado",
-                    "profile_user": user.to_json(),
+                    "profile_user": user_updated.to_json(),
                 }
             ),
             200,
@@ -62,7 +63,10 @@ def profile(username: str):
 
 @user_api.route("/u/new", methods=["POST"])
 def register_user():
-    data = UserReqDto.from_json(request.get_json())
+    try:
+        data = UserReqDto.from_json(request.get_json())
+    except:
+        return jsonify({"success": False, "message": "Completa todos los campos"}), 400
 
     if exists_user(data.id, data.username):
         return jsonify({"success": False, "message": "El usuario ya existe"}), 409
