@@ -5,11 +5,25 @@
   <title>{% block title %}Blog{% endblock %}</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <!-- Firebase SDK -->
-  <script defer src="/__/firebase/9.6.1/firebase-app-compat.js"></script>
-  <script defer src="/__/firebase/9.6.1/firebase-auth-compat.js"></script>
-  <script defer src="/__/firebase/init.js"></script>
-  <script defer src="{{ url_for('static', filename='auth.js') }}"></script>
+  <!-- Firebase SDK v12 (ESM) con llaves provistas -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFiuc4X6_uIQq2DzbaKxrxQ-7sIzSX7s4",
+      authDomain: "chatdistribuido-6d4ed.firebaseapp.com",
+      projectId: "chatdistribuido-6d4ed",
+      storageBucket: "chatdistribuido-6d4ed.firebasestorage.app",
+      messagingSenderId: "906064184156",
+      appId: "1:906064184156:web:100eaa405c262b97417799",
+      measurementId: "G-V0Z5L0PVB5"
+    };
+    window.__FIREBASE_CONFIG__ = firebaseConfig;
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (_) { /* analytics opcional */ }
+    window.__FIREBASE_APP_READY__ = true;
+  </script>
+  <script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -19,8 +33,8 @@
         <input type="text" name="q" placeholder="Buscar..." value="{{ q or '' }}" />
       </form>
       <div id="user-links">
-        <a href="/login">Entrar</a>
-        <a href="/register">Registro</a>
+        <a href="{{ url_for('login') }}">Entrar</a>
+        <a href="{{ url_for('register') }}">Registro</a>
       </div>
     </div>
   </nav>

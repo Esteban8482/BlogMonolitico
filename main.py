@@ -10,7 +10,8 @@ import os
 import secrets
 from datetime import datetime
 from functools import wraps
-from typing import Optional
+from typing import Optional, Tuple, Dict, Any
+import json
 
 from flask import (
 	Flask,
@@ -25,6 +26,10 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Firebase Admin
+import firebase_admin
+from firebase_admin import credentials, auth as fb_auth
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, "blog.db")
@@ -35,6 +40,41 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("BLOG_SECRET_KEY", secrets.token_hex(16))
 
 db = SQLAlchemy(app)
+
+
+# =============================
+# FIREBASE ADMIN INIT
+# =============================
+def init_firebase_admin() -> None:
+	"""Inicializa Firebase Admin con credenciales del entorno.
+
+	Busca credenciales de dos maneras:
+	- Ruta a JSON de servicio en FIREBASE_CREDENTIALS_JSON
+	- JSON embebido en FIREBASE_CREDENTIALS (contenido del archivo)
+	"""
+	if firebase_admin._apps:  # ya inicializado
+		return
+	cred: Optional[credentials.Base] = None
+	json_path = os.environ.get("FIREBASE_CREDENTIALS_JSON")
+	json_inline = os.environ.get("FIREBASE_CREDENTIALS")
+	if json_path and os.path.exists(json_path):
+		cred = credentials.Certificate(json_path)
+	elif json_inline:
+		try:
+			sa_dict = json.loads(json_inline)
+			cred = credentials.Certificate(sa_dict)
+		except Exception:
+			cred = None
+	else:
+		# Fallback a credencial por aplicación (para entorno con GOOGLE_APPLICATION_CREDENTIALS)
+		try:
+			cred = credentials.ApplicationDefault()
+		except Exception:
+			cred = None
+	if cred is None:
+		# Dejar sin inicializar; endpoints que lo requieran responderán 503
+		return
+	firebase_admin.initialize_app(cred)
 
 
 # =============================
@@ -98,6 +138,57 @@ def login_required(fn):
 	return wrapper
 
 
+def verify_firebase_token(id_token: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+	"""Verifica un ID token de Firebase y retorna los claims o un error."""
+	if not firebase_admin._apps:
+		init_firebase_admin()
+	if not firebase_admin._apps:
+		return None, "Firebase Admin no inicializado"
+	try:
+		decoded = fb_auth.verify_id_token(id_token)
+		return decoded, None
+	except Exception as e:  # noqa: BLE001
+		return None, str(e)
+
+
+def _extract_id_token_from_request() -> Optional[str]:
+	# Authorization: Bearer <token>
+	auth_header = request.headers.get("Authorization", "")
+	if auth_header.startswith("Bearer "):
+		return auth_header.split(" ", 1)[1].strip()
+	# Campo oculto en formularios
+	if request.method in {"POST", "PUT", "PATCH"}:
+		token = request.form.get("__firebase_id_token")
+		if token:
+			return token
+		data = request.get_json(silent=True) or {}
+		if isinstance(data, dict) and data.get("idToken"):
+			return data.get("idToken")
+	return None
+
+
+@app.before_request
+def ensure_session_from_firebase_token():
+	"""Si no hay sesión local, intenta derivarla de un ID token de Firebase."""
+	if session.get("user_id"):
+		return  # ya existe sesión
+	token = _extract_id_token_from_request()
+	if not token:
+		return
+	claims, err = verify_firebase_token(token)
+	if err or not claims:
+		return
+	email = claims.get("email")
+	if not email:
+		return
+	user = User.query.filter((User.email == email) | (User.username == email)).first()
+	if not user:
+		user = User(username=email, email=email, password_hash=generate_password_hash(secrets.token_hex(16)))
+		db.session.add(user)
+		db.session.commit()
+	session["user_id"] = user.id
+
+
 # =============================
 # RUTAS DE AUTENTICACIÓN
 # =============================
@@ -147,6 +238,53 @@ def logout():
 	session.pop("user_id", None)
 	flash("Sesión cerrada", "info")
 	return redirect(url_for("index"))
+
+
+# =============================
+# ENDPOINTS DE SESIÓN (FIREBASE)
+# =============================
+@app.route("/auth/session", methods=["POST"])  # AJAX: sin recarga
+def auth_session():
+	"""Sincroniza la sesión de servidor con un ID token de Firebase.
+
+	Espera JSON: { idToken: string }
+	- Verifica token
+	- Busca/crea usuario local por uid/email
+	- Guarda session.user_id
+	Retorna 200/401/503 con JSON.
+	"""
+	data = request.get_json(silent=True) or {}
+	id_token = data.get("idToken", "")
+	if not id_token:
+		return {"ok": False, "error": "Falta idToken"}, 400
+	claims, err = verify_firebase_token(id_token)
+	if err:
+		return {"ok": False, "error": f"Token inválido: {err}"}, 401
+	email = claims.get("email")
+	uid = claims.get("uid")
+	if not email or not uid:
+		return {"ok": False, "error": "Token sin email/uid"}, 401
+	user = User.query.filter((User.email == email) | (User.username == email)).first()
+	if not user:
+		# Crear usuario local con email como username por defecto (conservador)
+		user = User(username=email, email=email, password_hash=generate_password_hash(secrets.token_hex(16)))
+		db.session.add(user)
+		db.session.commit()
+	session["user_id"] = user.id
+	return {"ok": True, "userId": user.id}
+
+
+@app.route("/auth/logout", methods=["POST"])  # AJAX
+def auth_logout():
+	session.pop("user_id", None)
+	return {"ok": True}
+
+
+@app.route("/me")
+@login_required
+def me():
+	u = current_user()
+	return redirect(url_for("profile", username=u.username))
 
 
 # =============================
@@ -292,7 +430,14 @@ def not_found(e):  # pragma: no cover
 
 @app.context_processor
 def inject_globals():
-	return {"current_user": current_user(), "now": datetime.utcnow()}
+	# Exponer config de Firebase para el template de layout
+	firebase_config = {
+		"apiKey": os.environ.get("FIREBASE_API_KEY", ""),
+		"authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
+		"projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
+		"appId": os.environ.get("FIREBASE_APP_ID", ""),
+	}
+	return {"current_user": current_user(), "now": datetime.utcnow(), "firebase_config": firebase_config}
 
 
 def ensure_db():
@@ -303,5 +448,6 @@ def ensure_db():
 
 if __name__ == "__main__":
 	ensure_db()
+	init_firebase_admin()
 	app.run(debug=True, port=5000)
 
