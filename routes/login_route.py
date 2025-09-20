@@ -1,6 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from db_connector import User
-from db_connector import db
 from services.auth_service import register_user, authenticate_user
 import requests
 from config import ServicesConfig

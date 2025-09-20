@@ -18,9 +18,9 @@ def test_register_password_mismatch(client):
     assert "Las contraseñas no coinciden" in response.get_data(as_text=True)
 
 
-@patch("routes.login_route.User.query")
-def test_register_existing_user(mock_query, client):
-    mock_query.filter.return_value.first.return_value = User()
+@patch("routes.login_route.register_user")
+def test_register_existing_user(mock_register, client):
+    mock_register.return_value = None
     data = {
         "username": "testuser",
         "email": "test@example.com",
@@ -67,9 +67,9 @@ def test_register_user_exists(mock_register_user, client):
     assert "Usuario o correo ya existe" in response.get_data(as_text=True)
 
 
-@patch("routes.login_route.User.query")
-def test_login_invalid_credentials(mock_query, client):
-    mock_query.filter.return_value.first.return_value = None
+@patch("routes.login_route.authenticate_user")
+def test_login_invalid_credentials(mock_authenticate_user, client):
+    mock_authenticate_user.return_value = None
     data = {"username": "wrong", "password": "badpass"}
     response = client.post("/login", data=data)
     assert "Credenciales inválidas" in response.get_data(as_text=True)
