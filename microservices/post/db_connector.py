@@ -99,10 +99,24 @@ class Post:
         return Post.from_json(doc.to_dict())
 
     @staticmethod
-    def get_posts(limit: int):
-        query = db_post_collection.order_by(
-            "created_at", direction=firestore.Query.DESCENDING
-        ).limit(limit)
+    def get_posts(limit: int, title: str = ""):
+        if limit < 1:
+            return []
+
+        if not title:
+            query = db_post_collection.order_by(
+                "created_at", direction=firestore.Query.DESCENDING
+            ).limit(limit)
+        else:
+            query = (
+                db_post_collection.order_by("title")
+                .start_at(title.split(" "))
+                .end_at(
+                    [t + "\uf8ff" for t in title.split(" ")]
+                )  # \uf8ff es el último carácter unicode
+                .limit(limit)
+            )
+
         return [Post.from_json(doc.to_dict()) for doc in query.get()]
 
     @staticmethod

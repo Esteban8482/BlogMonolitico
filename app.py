@@ -52,16 +52,10 @@ def create_app(config_override=None):
 
     @app.route("/")
     def index():
-        # q = request.args.get("q", "").strip()
-        # query = Post.query.order_by(Post.created_at.desc())
-
-        # if q:
-        #     like = f"%{q}%"
-        #     query = query.filter((Post.title.ilike(like)) | (Post.content.ilike(like)))
-
-        # posts = query.limit(25).all()
-
-        post_req = requests.get(f"{ServicesConfig.POST_SERVICE_URL}/post/25")
+        query = request.args.get("q", "").strip()
+        post_req = requests.get(
+            f"{ServicesConfig.POST_SERVICE_URL}/post/limit/25?title={query}"
+        )
         posts = []
 
         if post_req.status_code >= 200 and post_req.status_code < 300:
