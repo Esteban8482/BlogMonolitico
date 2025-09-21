@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 def test_delete_post_success(client):
     mock_post = MagicMock()
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         with patch("routes.post_route.delete_post_service") as mock_delete:
@@ -29,7 +29,7 @@ def test_delete_post_not_found(client):
 
 def test_delete_post_wrong_author(client):
     mock_post = MagicMock()
-    mock_post.author.id = "999"  # distinto al user_id
+    mock_post.user_id = "999"  # distinto al user_id que hace la petición
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         response = client.post("/post/abc123/delete", headers={"X-User-ID": "1"})
@@ -39,7 +39,7 @@ def test_delete_post_wrong_author(client):
 
 def test_delete_post_delete_error(client):
     mock_post = MagicMock()
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         with patch(

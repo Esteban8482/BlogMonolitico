@@ -40,7 +40,7 @@ def test_edit_post_get_success(client):
         "title": "Título",
         "content": "Contenido",
     }
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         response = client.get("/post/123/edit", headers={"X-User-ID": "1"})
@@ -64,7 +64,7 @@ def test_edit_post_not_found(client):
 
 def test_edit_post_missing_fields(client):
     mock_post = MagicMock()
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         response = client.post(
@@ -78,7 +78,7 @@ def test_edit_post_missing_fields(client):
 
 def test_edit_post_success(client):
     mock_post = MagicMock()
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
     mock_updated = MagicMock()
     mock_updated.to_json.return_value = {
         "id": "123",

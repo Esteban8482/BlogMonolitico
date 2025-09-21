@@ -92,14 +92,27 @@ def post_detail(post_id: str):
     )
 
 
-@post_api.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
+@post_api.route("/post/<string:post_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_post(post_id: int):
+def edit_post(post_id: str):
     if request.method == "GET":
         post_req = requests.get(
             f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/edit",
             headers={"X-User-ID": str(current_user().id)},
         )
+
+        if not (post_req.status_code >= 200 and post_req.status_code < 300):
+            flash("Error al obtener la publicación", "danger")
+            abort(post_req.status_code)
+
+        post = None
+
+        try:
+            post = PostDto.from_json(post_req.json()["post"])
+        except Exception as e:
+            print(f"======== Error al obtener la publicación ========\n{e}\n")
+            flash("Error al obtener la publicación", "danger")
+            abort(404)
 
         return render_template("edit_post.html", post=post)
     elif request.method == "POST":
@@ -112,8 +125,8 @@ def edit_post(post_id: int):
             },
         )
 
-        if post_req.status_code != 200:
-            flash(post_req.json()["message"], "danger")
+        if not (post_req.status_code >= 200 and post_req.status_code < 300):
+            flash("Error al editar la publicación", "danger")
             return redirect(url_for("post.edit_post", post_id=post_id))
         else:
             flash(post_req.json()["message"], "success")
@@ -122,18 +135,16 @@ def edit_post(post_id: int):
             return redirect(url_for("post.post_detail", post_id=post.id))
 
 
-@post_api.route("/post/<int:post_id>/delete", methods=["POST"])
+@post_api.route("/post/<string:post_id>/delete", methods=["POST"])
 @login_required
-def delete_post(post_id: int):
-    post_eq = get_post_or_404(post_id)
-
+def delete_post(post_id: str):
     post_req = requests.post(
         f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/delete",
         headers={"X-User-ID": str(current_user().id)},
     )
 
-    if post_req.status_code != 200:
-        flash(post_req.json()["message"], "danger")
+    if not (post_req.status_code >= 200 and post_req.status_code < 300):
+        flash("Error al eliminar la publicación", "danger")
         return redirect(url_for("post.post_detail", post_id=post_id))
 
     flash(post_req.json()["message"], "success")
