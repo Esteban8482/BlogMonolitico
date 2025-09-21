@@ -12,8 +12,13 @@ from datetime import datetime
 
 from flask import Flask
 
-from db_connector import db
-from config import Config, DB_PATH
+from db_connector import (
+    db_check_user_firestore_connection,
+    db_init_user_firestore,
+    User,
+)
+from config import Config
+from log import logger
 
 
 def create_app(config_override=None):
@@ -23,21 +28,13 @@ def create_app(config_override=None):
     if config_override:
         app.config.update(config_override)
 
-    db.init_app(app)
+    # desde app para mantener actualizada la credencial sin necesidad de reiniciar
+    db_init_user_firestore(app.config["FIREBASE_ADMIN_CREDENTIALS"])
 
     # registrar Blueprints
     from routes import user_api
 
     app.register_blueprint(user_api)
-
-    # =============================
-    # COMMAND UTIL / INIT
-    # =============================
-    @app.cli.command("init-db")
-    def init_db_command():  # pragma: no cover - utilidad CLI
-        """Inicializa la base de datos."""
-        db.create_all()
-        print("Base de datos inicializada en", DB_PATH)
 
     return app
 
@@ -46,14 +43,14 @@ app = create_app()
 
 
 def ensure_db():
-    print("Verificando base de datos...")
+    logger.info("Verificando conexión a Firestore...")
 
-    if not os.path.exists(DB_PATH):
-        print("Creando base de datos...")
-
-        with app.app_context():
-            db.create_all()
-            print("Base de datos creada en", DB_PATH)
+    try:
+        db_check_user_firestore_connection()
+        logger.info("Conexión a Firestore establecida.")
+    except Exception as e:
+        logger.error("No se pudo conectar a Firestore.")
+        logger.error("Error:", e)
 
 
 if __name__ == "__main__":

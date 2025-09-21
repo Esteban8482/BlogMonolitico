@@ -8,33 +8,34 @@ Desacoplar la lógica de autenticación de usuarios de la aplicación con los en
 - Verificar si el usuario es el propietario de un post
 """
 
-from db_connector import db, User
+from db_connector import User
 from typing import Optional, List
+from datetime import datetime
 
 
-def get_user_or_404(user_id_or_name: int | str) -> Optional[User]:
-    if isinstance(user_id_or_name, int):
-        return User.query.get(user_id_or_name)
-
-    return User.query.filter(User.username == user_id_or_name).first()
+def get_user_or_404(user_id_or_name: str) -> Optional[User]:
+    return User.get_by_id_or_username(user_id_or_name, user_id_or_name)
 
 
 def update_user_bio(user: User, bio: str) -> User:
-    user.bio = bio
-    db.session.commit()
-    return user
+    user_db = User.get_by_id(user.id)
+    user_db.bio = bio
+    user_db.save_to_db()
+    return user_db
 
 
-def create_user(id: int, username: str) -> User:
+def create_user(user_id: str, username: str) -> User:
     user = User(
-        id=id,
+        id=user_id,
         username=username,
+        bio="",
+        created_at=datetime.now(),
     )
 
-    db.session.add(user)
-    db.session.commit()
+    user.save_to_db()
+
     return user
 
 
-def exists_user(id: int, username: str) -> bool:
-    return User.query.filter((User.id == id) | (User.username == username)).first()
+def exists_user(user_id: str, username: str) -> bool:
+    return User.exists_by_username_or_id(user_id, username)
