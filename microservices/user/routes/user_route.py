@@ -12,6 +12,7 @@ from services.user_service import (
 )
 
 from dtos import UserReqDto
+from log import logger
 
 user_api = Blueprint("user", __name__)
 
@@ -22,10 +23,10 @@ user_api = Blueprint("user", __name__)
 
 @user_api.route("/u/<username>", methods=["GET", "POST"])
 def profile(username: str):
-    print(f"======== Obteniendo perfil {username} ========")
+    logger.info(f"======== Obteniendo perfil {username} ========")
 
     user_id = request.headers.get("X-User-ID")
-    print(f"======== id req {user_id} ========")
+    logger.info(f"======== id req {user_id} ========")
 
     if not user_id:
         abort(403)
@@ -35,11 +36,11 @@ def profile(username: str):
     if not user:
         abort(404)
 
-    print(f"======== user {user} ========")
+    logger.info(f"======== user {user} ========")
 
     if request.method == "POST":
         data = request.get_json()
-        print(f"======== profile POST {data} ========")
+        logger.info(f"======== profile POST {data} ========")
 
         if user.id != int(user_id):
             abort(403)
@@ -65,18 +66,34 @@ def profile(username: str):
 def register_user():
     try:
         data = UserReqDto.from_json(request.get_json())
-    except:
+        logger.info(f"======== profile POST {data} ========")
+    except Exception as e:
+        logger.error(f"======== Error al obtener datos del request ========\n{e}\n")
         return jsonify({"success": False, "message": "Completa todos los campos"}), 400
 
-    if exists_user(data.id, data.username):
-        return jsonify({"success": False, "message": "El usuario ya existe"}), 409
+    try:
+        if exists_user(data.id, data.username):
+            return jsonify({"success": False, "message": "El usuario ya existe"}), 409
+    except Exception as e:
+        logger.error(
+            f"======== Error al verificar si el usuario existe ========\n{e}\n"
+        )
+        return (
+            jsonify({"success": False, "message": "Error al verificar el usuario"}),
+            500,
+        )
 
-    print(f"======== Creando usuario {data} ========")
-    user = create_user(data.id, data.username)
+    logger.info(f"======== Creando usuario {data} ========")
+
+    try:
+        user = create_user(data.id, data.username)
+    except Exception as e:
+        logger.error(f"======== Error al crear el usuario ========\n{e}\n")
+        return jsonify({"success": False, "message": "Error al crear el usuario"}), 500
 
     if not user:
         return jsonify({"success": False, "message": "Error al crear el usuario"}), 500
 
-    print(f"======== Usuario creado {user} ========")
+    logger.info(f"======== Usuario creado {user} ========")
 
     return jsonify({"success": True, "message": "Usuario creado"}), 200
