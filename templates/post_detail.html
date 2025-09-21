@@ -7,7 +7,7 @@
     post.created_at.strftime('%Y-%m-%d %H:%M') }}
   </div>
   <div class="body">{{ post.content|replace('\n', '<br />')|safe }}</div>
-  {% if current_user and current_user.id == post.user_id %}
+  {% if current_user and current_user.id|string == post.user_id|string %}
   <div class="actions">
     <a href="{{ url_for('post.edit_post', post_id=post.id) }}">Editar</a>
     <form

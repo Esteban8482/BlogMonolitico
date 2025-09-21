@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 def test_delete_post_success(client):
     mock_post = MagicMock()
-    mock_post.author.id = "1"
+    mock_post.user_id = "1"
 
     with patch("routes.post_route.get_post", return_value=mock_post):
         with patch("routes.post_route.delete_post_service") as mock_delete:

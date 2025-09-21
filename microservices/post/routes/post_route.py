@@ -125,7 +125,7 @@ def edit_post(post_id: str):
 
     if not post:
         return jsonify({"success": False, "message": "Publicación no encontrada"}), 404
-    elif post.author.id != user_id:
+    elif post.user_id != user_id:
         return jsonify({"success": False, "message": "No autorizado"}), 403
 
     if request.method == "POST":
@@ -156,7 +156,16 @@ def edit_post(post_id: str):
                     500,
                 )
 
-            return jsonify({"success": True, "message": "Publicación actualizada"}), 200
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "message": "Publicación actualizada",
+                        "post": post_updated.to_json(),
+                    }
+                ),
+                200,
+            )
 
     return jsonify({"success": True, "post": post.to_json()}), 200
 
@@ -179,7 +188,7 @@ def delete_post(post_id: str):
 
     if not post:
         return jsonify({"success": False, "message": "Publicación no encontrada"}), 404
-    elif post.author.id != user_id:
+    elif post.user_id != user_id:
         return jsonify({"success": False, "message": "No autorizado"}), 403
 
     try:
