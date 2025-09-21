@@ -33,18 +33,16 @@ def profile(username: str):
             headers={"X-User-ID": str(current_user().id)},
         )
 
-        print(f"======== profile user {user_req} ========")
-
         if user_req.status_code != 200:
+            flash("Error al obtener el perfil", "error")
             abort(404)
 
         try:
             user = UserDto.from_json(user_req.json()["profile_user"])
         except Exception as e:
-            print(f"======== failed to parse user {e} ========")
+            flash("Error al obtener el perfil", "error")
             abort(404)
 
-        print(f"======== profile user {user} ========")
         posts = get_user_posts_by_id(user.id)
 
         return render_template(
@@ -55,8 +53,6 @@ def profile(username: str):
         )
     elif request.method == "POST":
         # micro-servicio de usuario
-        print(f"======== profile POST {request.form} ========")
-
         post_req = requests.post(
             f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
             headers={"X-User-ID": str(current_user().id)},
