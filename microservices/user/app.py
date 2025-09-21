@@ -21,15 +21,16 @@ from config import Config
 from log import logger
 
 
-def create_app(config_override=None):
+def create_app(config_override=None, init_db=True):
     app = Flask(__name__)
     app.config.from_object(Config)
 
     if config_override:
         app.config.update(config_override)
 
-    # desde app para mantener actualizada la credencial sin necesidad de reiniciar
-    db_init_user_firestore(app.config["FIREBASE_ADMIN_CREDENTIALS"])
+    if init_db:
+        # desde app para mantener actualizada la credencial sin necesidad de reiniciar
+        db_init_user_firestore(app.config["FIREBASE_ADMIN_CREDENTIALS"])
 
     # registrar Blueprints
     from routes import user_api
