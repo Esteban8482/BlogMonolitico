@@ -15,12 +15,13 @@ from typing import Optional, List
 from datetime import datetime
 
 
-def create_post(title: str, content: str, author_id: int) -> Post:
+def create_post(title: str, content: str, author_id: str, author_username: str) -> Post:
     post = Post(
         id=None,
         title=title,
         content=content,
         user_id=author_id,
+        username=author_username,
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )

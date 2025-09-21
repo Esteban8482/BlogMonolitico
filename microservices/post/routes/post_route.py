@@ -55,6 +55,7 @@ def create_post():
     json_data = request.get_json()
     title = json_data.get("title", "").strip()
     content = json_data.get("content", "").strip()
+    username = json_data.get("username", "").strip()
 
     if not title or not content:
         return (
@@ -63,7 +64,7 @@ def create_post():
         )
 
     try:
-        post = create_post_service(title, content, user_id)
+        post = create_post_service(title, content, user_id, username)
     except Exception as e:
         logger.error(f"======== Error al crear la publicación ========\n{e}\n")
         return (

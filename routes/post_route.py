@@ -32,6 +32,7 @@ def create_post():
             json={
                 "title": request.form.get("title", "").strip(),
                 "content": request.form.get("content", "").strip(),
+                "username": current_user().username,
             },
         )
 
@@ -58,8 +59,6 @@ def create_post():
 @post_api.route("/post/<string:post_id>")
 @login_required
 def post_detail(post_id: str):
-    print(f"\n\n========={post_id=}=========\n\n")
-
     post_req = requests.get(
         f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}",
         headers={"X-User-ID": str(current_user().id)},
