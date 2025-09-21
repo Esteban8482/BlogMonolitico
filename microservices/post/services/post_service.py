@@ -33,8 +33,8 @@ def get_post(post_id: str) -> Optional[Post]:
     return Post.get_by_id(post_id)
 
 
-def get_posts_service(limit: int) -> List[Post]:
-    return Post.get_posts(limit)
+def get_posts_service(limit: int, title: str) -> List[Post]:
+    return Post.get_posts(limit, title)
 
 
 def update_post(post: Post, title: str, content: str) -> Post:

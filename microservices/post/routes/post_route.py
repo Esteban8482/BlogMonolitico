@@ -22,8 +22,13 @@ post_api = Blueprint("post", __name__)
 
 @post_api.route("/post/limit/<int:limit>")
 def get_posts_limit(limit: int):
+    if limit < 1:
+        return jsonify({"success": False, "message": "Limite no valido"}), 400
+
+    title = request.args.get("title", "").strip()
+
     try:
-        posts = get_posts_service(limit)
+        posts = get_posts_service(limit, title)
     except Exception as e:
         logger.error(f"======== Error al obtener las publicaciones ========\n{e}\n")
         return (
