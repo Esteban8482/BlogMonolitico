@@ -25,9 +25,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    posts = db.relationship(
-        "Post", backref="author", lazy=True, cascade="all, delete-orphan"
-    )
+    # posts = db.relationship(
+    #     "Post", backref="author", lazy=True, cascade="all, delete-orphan"
+    # )
     comments = db.relationship(
         "Comment", backref="author", lazy=True, cascade="all, delete-orphan"
     )
@@ -39,21 +39,21 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
-    user_id = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
-    )
+# class Post(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(150), nullable=False)
+#     content = db.Column(db.Text, nullable=False)
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+#     updated_at = db.Column(
+#         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+#     )
+#     user_id = db.Column(
+#         db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
+#     )
 
-    comments = db.relationship(
-        "Comment", backref="post", lazy=True, cascade="all, delete-orphan"
-    )
+#     comments = db.relationship(
+#         "Comment", backref="post", lazy=True, cascade="all, delete-orphan"
+#     )
 
 
 class Comment(db.Model):
@@ -63,6 +63,4 @@ class Comment(db.Model):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
     )
-    post_id = db.Column(
-        db.Integer, db.ForeignKey("post.id"), nullable=False, index=True
-    )
+    post_id = db.Column(db.Text, nullable=False)
