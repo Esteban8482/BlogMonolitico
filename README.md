@@ -33,6 +33,15 @@ python app.py
 
 Puerto por defecto: `5002`
 
+### Post
+
+```bash
+cd microservices/post
+python app.py
+```
+
+Puerto por defecto: `5003`
+
 ## Tests
 
 ```bash
