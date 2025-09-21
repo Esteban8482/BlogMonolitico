@@ -49,6 +49,9 @@ class Post:
     created_at: datetime
     updated_at: datetime
     user_id: str
+    username: (
+        str  # redundancia de datos pero permite no hacer llamadas a la API de usuario
+    )
 
     def __repr__(self):
         return f"<Post {self.title} {self.id=} {self.created_at=} {self.content=} {self.user_id=}>"
@@ -61,6 +64,7 @@ class Post:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "user_id": self.user_id,
+            "username": self.username,
         }
 
     @classmethod
@@ -75,6 +79,7 @@ class Post:
             created_at=datetime.fromisoformat(json["created_at"]),
             updated_at=datetime.fromisoformat(json["updated_at"]),
             user_id=json["user_id"],
+            username=json["username"],
         )
 
     def save_to_db(self):
