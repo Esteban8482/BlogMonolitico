@@ -9,17 +9,20 @@ Desacoplar la lógica de autenticación de usuarios de la aplicación con los en
 - Verificar si el comentario pertenece al autor del post
 """
 
-from db_connector import db, Comment, Post
+from db_connector import db, Comment
 from helpers import current_user
 from flask import abort
 
 
 def create_comment(post_id: int, content: str) -> Comment:
-    post = Post.query.get_or_404(post_id)
-    comment = Comment(content=content, author=current_user(), post=post)
+    comment = Comment(content=content, author=current_user(), post_id=post_id)
     db.session.add(comment)
     db.session.commit()
     return comment
+
+
+def get_post_comments(post_id: int) -> list[Comment]:
+    return Comment.query.filter_by(post_id=post_id).all()
 
 
 def get_comment_or_404(comment_id: int) -> Comment:

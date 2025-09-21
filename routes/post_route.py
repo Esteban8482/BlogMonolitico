@@ -5,18 +5,15 @@ from flask import (
     redirect,
     url_for,
     flash,
-    session,
     abort,
 )
+import requests
 
-from db_connector import Post
+from services.comment_service import get_post_comments
 from helpers import current_user, login_required
-from services.post_service import (
-    create_post as create_post_service,
-    get_post_or_404,
-    update_post,
-    delete_post as delete_post_service,
-)
+from config import ServicesConfig
+from dtos import PostDto
+
 
 post_api = Blueprint("post", __name__)
 
@@ -29,56 +26,116 @@ post_api = Blueprint("post", __name__)
 @login_required
 def create_post():
     if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        content = request.form.get("content", "").strip()
+        post_rq = requests.post(
+            f"{ServicesConfig.POST_SERVICE_URL}/post/new",
+            headers={"X-User-ID": str(current_user().id)},
+            json={
+                "title": request.form.get("title", "").strip(),
+                "content": request.form.get("content", "").strip(),
+            },
+        )
 
-        if not title or not content:
-            flash("Título y contenido requeridos", "danger")
-        else:
-            post = create_post_service(title, content, current_user().id)
-            flash("Publicación creada", "success")
+        if post_rq.status_code >= 200 and post_rq.status_code < 300:
+            message = post_rq.json()["message"] if "message" in post_rq.json() else ""
+            flash(message, "success")
+
+            post = PostDto.from_json(post_rq.json()["post"])
             return redirect(url_for("post.post_detail", post_id=post.id))
+        else:
+            try:
+                message = (
+                    post_rq.json()["message"] if "message" in post_rq.json() else ""
+                )
+                flash(message, "danger")
+            except:
+                flash("Error al crear la publicación", "danger")
+
+            return redirect(url_for("post.create_post"))
 
     return render_template("create_post.html")
 
 
-def _require_post_owner(post: Post):
-    if not current_user() or post.author.id != current_user().id:
-        abort(403)
+@post_api.route("/post/<string:post_id>")
+@login_required
+def post_detail(post_id: str):
+    print(f"\n\n========={post_id=}=========\n\n")
 
+    post_req = requests.get(
+        f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}",
+        headers={"X-User-ID": str(current_user().id)},
+    )
 
-@post_api.route("/post/<int:post_id>")
-def post_detail(post_id: int):
-    post = get_post_or_404(post_id)
-    return render_template("post_detail.html", post=post, user=current_user())
+    if not (post_req.status_code >= 200 and post_req.status_code < 300):
+        try:
+            message = post_req.json()["message"]
+        except:
+            message = "Error al obtener la publicación"
+
+        flash(message, "danger")
+        abort(404)
+
+    try:
+        post = PostDto.from_json(post_req.json()["post"])
+    except:
+        flash("Error al obtener la publicación", "danger"), abort(500)
+        flash("Error al obtener la publicación", "danger")
+        abort(404)
+
+    comments = []
+
+    try:
+        comments = get_post_comments(post.id)
+    except:
+        flash("Error al obtener los comentarios", "danger")
+
+    return render_template(
+        "post_detail.html", post=post, user=current_user(), comments=comments
+    )
 
 
 @post_api.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_post(post_id: int):
-    post = get_post_or_404(post_id)
-    _require_post_owner(post)
+    if request.method == "GET":
+        post_req = requests.get(
+            f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/edit",
+            headers={"X-User-ID": str(current_user().id)},
+        )
 
-    if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        content = request.form.get("content", "").strip()
+        return render_template("edit_post.html", post=post)
+    elif request.method == "POST":
+        post_req = requests.post(
+            f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/edit",
+            headers={"X-User-ID": str(current_user().id)},
+            json={
+                "title": request.form.get("title", "").strip(),
+                "content": request.form.get("content", "").strip(),
+            },
+        )
 
-        if not title or not content:
-            flash("Campos requeridos", "danger")
+        if post_req.status_code != 200:
+            flash(post_req.json()["message"], "danger")
+            return redirect(url_for("post.edit_post", post_id=post_id))
         else:
-            update_post(post, title, content)
-            flash("Publicación actualizada", "success")
-            return redirect(url_for("post.post_detail", post_id=post.id))
+            flash(post_req.json()["message"], "success")
 
-    return render_template("edit_post.html", post=post)
+            post = PostDto.from_json(post_req.json()["post"])
+            return redirect(url_for("post.post_detail", post_id=post.id))
 
 
 @post_api.route("/post/<int:post_id>/delete", methods=["POST"])
 @login_required
 def delete_post(post_id: int):
-    post = get_post_or_404(post_id)
-    _require_post_owner(post)
-    delete_post_service(post)
+    post_eq = get_post_or_404(post_id)
 
-    flash("Publicación eliminada", "info")
+    post_req = requests.post(
+        f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/delete",
+        headers={"X-User-ID": str(current_user().id)},
+    )
+
+    if post_req.status_code != 200:
+        flash(post_req.json()["message"], "danger")
+        return redirect(url_for("post.post_detail", post_id=post_id))
+
+    flash(post_req.json()["message"], "success")
     return redirect(url_for("index"))

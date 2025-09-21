@@ -14,16 +14,19 @@ Este archivo contiene la configuración de la aplicación.
 import sys
 import os
 from datetime import datetime
+import requests
 
 from flask import (
     Flask,
     render_template,
     request,
+    flash,
 )
 
-from db_connector import db, Post
+from db_connector import db
 from helpers import current_user
-from config import Config, DB_PATH
+from config import Config, DB_PATH, ServicesConfig
+from dtos import PostDto
 
 
 def create_app(config_override=None):
@@ -49,15 +52,35 @@ def create_app(config_override=None):
 
     @app.route("/")
     def index():
-        q = request.args.get("q", "").strip()
-        query = Post.query.order_by(Post.created_at.desc())
+        # q = request.args.get("q", "").strip()
+        # query = Post.query.order_by(Post.created_at.desc())
 
-        if q:
-            like = f"%{q}%"
-            query = query.filter((Post.title.ilike(like)) | (Post.content.ilike(like)))
+        # if q:
+        #     like = f"%{q}%"
+        #     query = query.filter((Post.title.ilike(like)) | (Post.content.ilike(like)))
 
-        posts = query.limit(25).all()
-        return render_template("index.html", posts=posts, q=q, user=current_user())
+        # posts = query.limit(25).all()
+
+        post_req = requests.get(f"{ServicesConfig.POST_SERVICE_URL}/post/25")
+        posts = []
+
+        if post_req.status_code >= 200 and post_req.status_code < 300:
+            posts = post_req.json()["posts"]
+        else:
+            try:
+                message = post_req.json()["message"]
+            except:
+                message = "Error al obtener las publicaciones"
+
+            flash(message, "danger")
+
+        try:
+            posts = [PostDto.from_json(post) for post in posts]
+        except Exception as e:
+            flash(f"Error al obtener las publicaciones {e}", "danger")
+            posts = []
+
+        return render_template("index.html", posts=posts, user=current_user())
 
     # =============================
     # COMMAND UTIL / INIT
