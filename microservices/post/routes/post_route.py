@@ -20,8 +20,8 @@ post_api = Blueprint("post", __name__)
 # =============================
 
 
-@post_api.route("/post/<int:limit>")
-def get_posts(limit: int):
+@post_api.route("/post/limit/<int:limit>")
+def get_posts_limit(limit: int):
     try:
         posts = get_posts_service(limit)
     except Exception as e:
