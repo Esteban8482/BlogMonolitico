@@ -1,15 +1,32 @@
-{% extends 'layout.html' %}
-{% block title %}Editar Publicación{% endblock %}
-{% block content %}
+{% extends 'layout.html' %} {% block title %}Editar Publicación{% endblock %} {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css" />
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='markdown.css') }}" />
+
 <h1>Editar Publicación</h1>
+
 <form method="post" class="form">
-  <label>Título
-    <input type="text" name="title" value="{{ post.title }}" required />
-  </label>
-  <label>Contenido
-    <textarea name="content" rows="10" required>{{ post.content }}</textarea>
-  </label>
+  <label>Título </label>
+  <input type="text" name="title" value="{{ post.title }}" required />
+
+  <label>Contenido </label>
+  <textarea id="markdown-editor" name="content" required>{{ post.content }}</textarea>
+
   <button type="submit">Guardar</button>
+
   <a href="{{ url_for('post.post_detail', post_id=post.id) }}">Cancelar</a>
 </form>
+
+<script>
+  const easyMDE = new EasyMDE({
+    element: document.getElementById('markdown-editor'),
+    spellChecker: false,
+    autosave: {
+      enabled: true,
+      delay: 1000,
+      uniqueId: 'post_content',
+    },
+  })
+</script>
 {% endblock %}
