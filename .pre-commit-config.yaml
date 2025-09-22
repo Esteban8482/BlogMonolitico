@@ -10,4 +10,4 @@ repos:
     hooks:
       - id: prettier
         args: [--write]
-        files: \.(html|css|js)$
+        files: \.(css|js)$

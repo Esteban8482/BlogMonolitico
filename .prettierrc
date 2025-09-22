@@ -6,12 +6,6 @@
   "trailingComma": "es5",
   "overrides": [
     {
-      "files": "templates/**/*.html",
-      "options": {
-        "parser": "html"
-      }
-    },
-    {
       "files": "static/**/*.css",
       "options": {
         "parser": "css"
