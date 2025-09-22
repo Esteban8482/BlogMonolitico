@@ -67,7 +67,6 @@ def delete_comment(comment_id: int):
 
 @bp.get("/comments")
 def list_comments():
-    # Leer filtro
     try:
         post_id = int(request.args.get("post_id", "0"))
     except Exception:
