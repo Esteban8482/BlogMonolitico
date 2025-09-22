@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro - Microservicio Hosting</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-2: #111827;
+      --card: #0b1220;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-600: #2563eb;
+      --ring: rgba(59, 130, 246, .4);
+      --success: #10b981;
+      --danger: #ef4444;
+      --card-border: rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% -10%, #1e3a8a22 10%, transparent 60%),
+                  radial-gradient(900px 500px at 110% 10%, #14b8a622 10%, transparent 60%),
+                  linear-gradient(180deg, var(--bg), var(--bg-2));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .container { width: 100%; max-width: 960px; }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding: 8px 4px; opacity: .95;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .brand .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #60a5fa, #34d399); display: grid; place-items: center; font-weight: 800; color: #0b1020; }
+    .brand span { font-weight: 700; letter-spacing: .3px; }
+
+    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 22px; }
+    @media (max-width: 860px){ .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 20px 35px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .card h1 { margin: 8px 0 4px; font-size: 20px; }
+    .card p.sub { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+
+    form { display: grid; gap: 12px; }
+    .field { display: grid; gap: 6px; }
+    .label { font-size: 12px; color: var(--muted); }
+    input[type=email], input[type=password] {
+      width: 100%;
+      background: #0a1020; color: var(--text);
+      border: 1px solid var(--card-border);
+      border-radius: 10px; padding: 12px 14px; outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input[type=email]:focus, input[type=password]:focus { border-color: var(--primary); box-shadow: 0 0 0 6px var(--ring); }
+    .actions { display: grid; gap: 10px; }
+    .btn-primary {
+      background: linear-gradient(180deg, var(--primary), var(--primary-600));
+      color: white;
+      border: 0; border-radius: 10px; cursor: pointer; padding: 12px 14px; font-weight: 600;
+      box-shadow: 0 10px 18px rgba(37, 99, 235, .25);
+    }
+    .btn-primary:hover { filter: brightness(1.02); }
+    .btn-google {
+      display: inline-flex; align-items: center; gap: 10px; justify-content: center;
+      background: #0b1220; color: var(--text);
+      border: 2px solid #4285F4; border-radius: 10px; cursor: pointer; padding: 11px 14px;
+    }
+    .divider { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; color: var(--muted); font-size: 12px; }
+    .divider:before, .divider:after { content: ""; height: 1px; background: var(--card-border); display: block; }
+
+    .panel { background: #0a1020; border: 1px dashed var(--card-border); border-radius: 14px; padding: 16px; }
+    pre { margin: 0; background: transparent; color: #cbd5e1; font-size: 12px; max-height: 280px; overflow: auto; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a class="brand" href="#" aria-label="Inicio">
+        <div class="logo">B</div>
+        <span>BlogDistri · Auth</span>
+      </a>
+      <small class="muted">Hosting microservicio</small>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h1>Crear cuenta</h1>
+        <p class="sub">Regístrate con email o usa tu cuenta de Google</p>
+
+        <form id="register-form" autocomplete="on">
+          <div class="field">
+            <label class="label">Email</label>
+            <input type="email" name="email" placeholder="email@example.com" required>
+          </div>
+          <div class="field">
+            <label class="label">Contraseña</label>
+            <input type="password" name="password" placeholder="mínimo 6 caracteres" minlength="6" required>
+          </div>
+          <div class="actions">
+            <button class="btn-primary" type="submit">Registrarme</button>
+          </div>
+        </form>
+
+        <div class="divider">o continúa con</div>
+        <button id="google-login" class="btn-google" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continuar con Google
+        </button>
+      </section>
+
+      <aside class="card panel">
+        <h1>Debug / Respuesta</h1>
+        <p class="sub">Resultado del servidor de autenticación</p>
+        <pre id="out">{}</pre>
+        <p class="muted">Tip: habilita Google en Firebase Console → Authentication → Sign-in method.</p>
+      </aside>
+    </div>
+
+    <p class="footer">© <span id="year"></span> BlogDistri · Firebase Hosting-only</p>
+  </div>
+
+  <!-- Firebase SDK (Auth - compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script>
+    // Configuración de tu proyecto (ajústala si usas otro proyecto)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTP9xhMz2_QiHW20mc-5pgEg1UzMu3oBU",
+      authDomain: "blogdistri.firebaseapp.com",
+      projectId: "blogdistri"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const form = document.getElementById('register-form');
+    const out = document.getElementById('out');
+    const googleBtn = document.getElementById('google-login');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      try {
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        out.textContent = JSON.stringify({ success: true, uid: userCred.user.uid, email: userCred.user.email }, null, 2);
+      } catch (err) {
+        out.textContent = JSON.stringify({ success: false, error: err.code, message: err.message }, null, 2);
+      }
+    });
+
+    // Login/Registro con Google (popup)
+    googleBtn.addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        out.textContent = JSON.stringify({
+          success: true,
+          provider: 'google',
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName
+        }, null, 2);
+      } catch (err) {
+        out.textContent = JSON.stringify({ success: false, error: err.code, message: err.message }, null, 2);
+      }
+    });
+  </script>
+</body>
+</html>
