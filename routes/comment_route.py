@@ -9,16 +9,14 @@ from flask import (
     abort,
 )
 
-from helpers import current_user, login_required
+from helpers import login_required
+from services.post_service import get_post
 from services.comment_service import (
     create_comment,
     get_comment_or_404,
     delete_comment as delete_comment_service,
     is_comment_owner_or_post_owner,
 )
-from config import ServicesConfig
-import requests
-from dtos import PostDto
 
 comment_api = Blueprint("comment", __name__)
 
@@ -30,20 +28,11 @@ comment_api = Blueprint("comment", __name__)
 @comment_api.route("/post/<string:post_id>/comment", methods=["POST"])
 @login_required
 def add_comment(post_id: str):
-    post_req = requests.get(
-        f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}",
-        headers={"X-User-ID": str(current_user().id)},
-    )
+    post = get_post(post_id)
 
-    if not (post_req.status_code >= 200 and post_req.status_code < 300):
-        flash(post_req.json()["message"], "danger")
-        abort(post_req.status_code)
-
-    try:
-        post = PostDto.from_json(post_req.json()["data"])
-    except:
+    if not post:
         flash("Error al obtener la publicación", "danger")
-        abort(500)
+        abort(400)
 
     content = request.form.get("content", "").strip()
 

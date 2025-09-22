@@ -5,14 +5,13 @@ from flask import (
     redirect,
     url_for,
     flash,
-    session,
     abort,
 )
-import requests
 
 from helpers import current_user, login_required
-from dtos import UserDto, PostDto
-from config import ServicesConfig
+from services.post_service import get_user_posts
+from services.user_service import get_user_profile, update_user_profile
+
 
 user_api = Blueprint("user", __name__)
 
@@ -25,41 +24,17 @@ user_api = Blueprint("user", __name__)
 @login_required
 def profile(username: str):
     if request.method == "GET":
-        # micro-servicio de usuario
-        user_req = requests.get(
-            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
-            headers={"X-User-ID": str(current_user().id)},
-        )
+        user = get_user_profile(username)
 
-        if user_req.status_code != 200:
+        if not user:
             flash("Error al obtener el perfil", "error")
-            abort(404)
+            abort(400)
 
-        try:
-            user = UserDto.from_json(user_req.json()["data"])
-        except Exception as e:
-            flash("Error al obtener el perfil", "error")
-            abort(404)
+        posts = get_user_posts(user.id)
 
-        posts_req = requests.get(
-            f"{ServicesConfig.POST_SERVICE_URL}/post/user/{user.id}",
-            headers={"X-User-ID": str(current_user().id)},
-        )
-
-        if not (posts_req.status_code >= 200 and posts_req.status_code < 300):
-            message = (
-                posts_req.json()["message"]
-                if "message" in posts_req.json()
-                else "Error al obtener las publicaciones"
-            )
-            flash(message, "error")
-
-        posts = []
-
-        try:
-            posts = [PostDto.from_json(post) for post in posts_req.json()["data"]]
-        except Exception as e:
-            flash(f"Error al obtener las publicaciones {e}", "error")
+        if posts is None:
+            flash("Error al obtener las publicaciones", "error")
+            posts = []
 
         return render_template(
             "profile.html",
@@ -68,16 +43,11 @@ def profile(username: str):
             user=current_user(),
         )
     elif request.method == "POST":
-        # micro-servicio de usuario
-        post_req = requests.post(
-            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
-            headers={"X-User-ID": str(current_user().id)},
-            json={"bio": request.form.get("bio", "")},
-        )
+        user = update_user_profile(username, request.form.get("bio", ""))
 
-        if not (post_req.status_code >= 200 and post_req.status_code < 300):
+        if not user:
             flash("Error al actualizar el perfil", "error")
-        else:
-            flash("Perfil actualizado", "success")
+            return redirect(url_for("user.profile", username=username))
 
+        flash("Perfil actualizado", "success")
         return redirect(url_for("user.profile", username=username))

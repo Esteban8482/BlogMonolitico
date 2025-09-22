@@ -32,7 +32,7 @@ def test_register_existing_user(mock_register, client):
 
 
 @patch("routes.login_route.register_user")
-@patch("routes.login_route.requests")
+@patch("routes.login_route.create_user_profile")
 def test_register_success(mock_req, mock_register_user, client):
     user = type("User", (), {"id": 1})()
     mock_register_user.return_value = user

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+
 from services.auth_service import register_user, authenticate_user
-import requests
-from config import ServicesConfig
+from services.user_service import create_user_profile
 
 login_api = Blueprint("login", __name__)
 
@@ -31,14 +31,12 @@ def register():
                 )
                 return redirect(url_for("login.register"))
 
-            # registrar usuarios en el microservicio de usuario
-            user_req = requests.post(
-                f"{ServicesConfig.USER_SERVICE_URL}/u/new",
-                json={"id": reg_user.id, "username": username},
-            )
+            user = create_user_profile(reg_user.id, username)
+            print("USER REGISTRADO", reg_user)
+            print("USER PERFIL CREADO", user)
 
-            if user_req.status_code != 200:
-                flash("Error al crear el usuario", "danger")
+            if not user:
+                flash("Error al crear el perfil", "danger")
                 return redirect(url_for("login.register"))
 
             flash("Registro exitoso. Inicia sesión.", "success")
