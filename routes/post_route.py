@@ -9,7 +9,7 @@ from flask import (
 )
 import markdown
 
-from services.comment_service import get_post_comments
+from services.comment_service import list_comments
 from services.post_service import (
     create_post as create_post_service,
     get_post,
@@ -57,7 +57,7 @@ def post_detail(post_id: str):
     comments = []
 
     try:
-        comments = get_post_comments(post.id)
+        comments = list_comments(post.id)
     except:
         flash("Error al obtener los comentarios", "danger")
 

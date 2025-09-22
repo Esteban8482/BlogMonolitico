@@ -39,7 +39,11 @@ def add_comment(post_id: str):
     if not content:
         flash("Comentario vacío", "danger")
     else:
-        create_comment(post_id, content)
+        comment = create_comment(post_id, content)
+
+        if not comment:
+            flash("Error al agregar el comentario", "danger")
+
         flash("Comentario agregado", "success")
 
     return redirect(url_for("post.post_detail", post_id=post.id))
@@ -48,12 +52,16 @@ def add_comment(post_id: str):
 @comment_api.route("/comment/<int:comment_id>/delete", methods=["POST"])
 @login_required
 def delete_comment(comment_id: int):
-    comment = get_comment_or_404(comment_id)
+    try:
+        comment = get_comment_or_404(comment_id)
 
-    if not is_comment_owner_or_post_owner(comment):
-        abort(403)
+        if not is_comment_owner_or_post_owner(comment):
+            abort(403)
 
-    post_id = comment.post_id
-    delete_comment_service(comment)
-    flash("Comentario eliminado", "info")
-    return redirect(url_for("post.post_detail", post_id=post_id))
+        post_id = str(comment.post_id)
+        delete_comment_service(comment)
+        flash("Comentario eliminado", "info")
+        return redirect(url_for("post.post_detail", post_id=post_id))
+    except Exception as e:
+        print(e)
+        abort(400)
