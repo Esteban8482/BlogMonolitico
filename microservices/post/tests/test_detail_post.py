@@ -1,9 +1,10 @@
-from unittest.mock import patch, Mock, MagicMock
-from routes import post_route
+from unittest.mock import patch
 from datetime import datetime
 from db_connector import Post
+from dtos import ApiRes
 
 
+# Utilidad para crear un post simulado
 def post_test(
     id=123,
     title="Nuevo post",
@@ -13,7 +14,7 @@ def post_test(
     created_at=datetime.now(),
     updated_at=datetime.now(),
 ):
-    p = Post(
+    return Post(
         id=id,
         title=title,
         content=content,
@@ -22,31 +23,36 @@ def post_test(
         created_at=created_at,
         updated_at=updated_at,
     )
-    return p
-
-
-def test_error_500_db(client):
-    with patch("routes.post_route.get_post") as mock_get:
-        mock_get.side_effect = Exception
-        response = client.get("/post/123")
-        assert response.status_code == 500
 
 
 def test_post_detail_success(client):
-    with patch("routes.post_route.get_post") as mock_post:
-        mock_post.return_value = post_test()
-
+    mock_post = post_test()
+    with patch(
+        "db_connector.PostRepository.get_by_id",
+        return_value=ApiRes.success("OK", mock_post),
+    ):
         response = client.get("/post/123")
-
-        print(response.json)
-
         assert response.status_code == 200
         assert response.json["success"] is True
-        assert str(response.json["post"]["id"]) == "123"
+        assert str(response.json["data"]["id"]) == "123"
+
+
+def test_error_500_db(client):
+    with patch(
+        "db_connector.PostRepository.get_by_id",
+        return_value=ApiRes.internal_error("Error interno simulado"),
+    ):
+        response = client.get("/post/123")
+        assert response.status_code == 500
+        assert response.json["success"] is False
+        assert response.json["message"] == "Error interno simulado"
 
 
 def test_post_detail_not_found(client):
-    with patch("routes.post_route.get_post", return_value=None):
+    with patch(
+        "db_connector.PostRepository.get_by_id",
+        return_value=ApiRes.not_found("Publicación no encontrada"),
+    ):
         response = client.get("/post/999")
         assert response.status_code == 404
         assert response.json["success"] is False
