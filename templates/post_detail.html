@@ -3,22 +3,33 @@
 {% block content %}
 <article class="post-detail">
   <h1>{{ post.title }}</h1>
-  <div class="meta">Por <a href="{{ url_for('user.profile', username=post.author.username) }}">{{ post.author.username
-      }}</a>
-    | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+  <div class="meta">
+    Por <a href="{{ url_for('user.profile', username=post.author.username) }}">{{ post.author.username }}</a>
+    | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+  </div>
   <div class="body">{{ post.content|replace('\n', '<br>')|safe }}</div>
   {% if current_user and current_user.id == post.author.id %}
   <div class="actions">
     <a href="{{ url_for('post.edit_post', post_id=post.id) }}">Editar</a>
-    <form method="post" action="{{ url_for('post.delete_post', post_id=post.id) }}" style="display:inline"
-      onsubmit="return confirm('¿Eliminar publicación?');">
+    <form method="post" action="{{ url_for('post.delete_post', post_id=post.id) }}"
+          style="display:inline" onsubmit="return confirm('¿Eliminar publicación?');">
       <button type="submit" class="danger">Eliminar</button>
     </form>
   </div>
   {% endif %}
 </article>
+
 <section class="comments">
-  <h2>Comentarios ({{ post.comments|length }})</h2>
+  <h2>
+    Comentarios (
+      {% if comments is defined %}
+        {{ comments|length }}
+      {% else %}
+        {{ post.comments|length }}
+      {% endif %}
+    )
+  </h2>
+
   {% if current_user %}
   <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
     <textarea name="content" rows="3" placeholder="Escribe un comentario..." required></textarea>
@@ -27,22 +38,58 @@
   {% else %}
   <p><a href="{{ url_for('login.login') }}">Inicia sesión</a> para comentar.</p>
   {% endif %}
+
   <ul class="comment-list">
-    {% for c in post.comments|sort(attribute='created_at') %}
-    <li>
-      <div class="comment-meta">
-        <a href="{{ url_for('user.profile', username=c.author.username) }}">{{ c.author.username }}</a> · {{
-        c.created_at.strftime('%Y-%m-%d %H:%M') }}
-        {% if current_user and (current_user.id == c.author.id or current_user.id == post.author.id) %}
-        <form method="post" action="{{ url_for('comment.delete_comment', comment_id=c.id) }}" style="display:inline"
-          onsubmit="return confirm('¿Eliminar comentario?');">
-          <button type="submit" class="link danger">Eliminar</button>
-        </form>
-        {% endif %}
-      </div>
-      <div class="comment-body">{{ c.content|replace('\n', '<br>')|safe }}</div>
-    </li>
-    {% endfor %}
+    {% if comments is defined %}
+      {# --- Comentarios desde microservicio --- #}
+      {% for c in comments %}
+      <li>
+        <div class="comment-meta">
+          {% if c.author is defined %}
+            <a href="{{ url_for('user.profile', username=c.author.username) }}">{{ c.author.username }}</a>
+          {% else %}
+            <span>Usuario {{ c.user_id }}</span>
+          {% endif %}
+          ·
+          {% if c.created_at is string %}
+            {{ c.created_at[:16]|replace('T',' ') }}
+          {% else %}
+            {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+          {% endif %}
+
+          {% if current_user and (
+               (c.author is defined and current_user.id == c.author.id)
+               or current_user.id == post.author.id) %}
+          <form method="post" action="{{ url_for('comment.delete_comment', comment_id=c.id) }}"
+                style="display:inline"
+                onsubmit="return confirm('¿Eliminar comentario?');">
+            <button type="submit" class="link danger">Eliminar</button>
+          </form>
+          {% endif %}
+        </div>
+        <div class="comment-body">{{ c.content|replace('\n', '<br>')|safe }}</div>
+      </li>
+      {% endfor %}
+    {% else %}
+      {# --- Comentarios desde el monolito (ORM local) --- #}
+      {% for c in post.comments|sort(attribute='created_at') %}
+      <li>
+        <div class="comment-meta">
+          <a href="{{ url_for('user.profile', username=c.author.username) }}">{{ c.author.username }}</a>
+          · {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+
+          {% if current_user and (current_user.id == c.author.id or current_user.id == post.author.id) %}
+          <form method="post" action="{{ url_for('comment.delete_comment', comment_id=c.id) }}"
+                style="display:inline"
+                onsubmit="return confirm('¿Eliminar comentario?');">
+            <button type="submit" class="link danger">Eliminar</button>
+          </form>
+          {% endif %}
+        </div>
+        <div class="comment-body">{{ c.content|replace('\n', '<br>')|safe }}</div>
+      </li>
+      {% endfor %}
+    {% endif %}
   </ul>
 </section>
 {% endblock %}

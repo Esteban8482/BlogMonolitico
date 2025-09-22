@@ -15,8 +15,9 @@ from services.post_service import (
     create_post as create_post_service,
     get_post_or_404,
     update_post,
-    delete_post as delete_post_service,
+    delete_post as delete_post_service
 )
+from services.comment_service import list_comments
 
 post_api = Blueprint("post", __name__)
 
@@ -50,7 +51,9 @@ def _require_post_owner(post: Post):
 @post_api.route("/post/<int:post_id>")
 def post_detail(post_id: int):
     post = get_post_or_404(post_id)
-    return render_template("post_detail.html", post=post, user=current_user())
+    comments = list_comments(post_id)           
+    print(f"[post_detail] comments desde MS: {len(comments)}")
+    return render_template("post_detail.html", post=post, comments=comments)  
 
 
 @post_api.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
