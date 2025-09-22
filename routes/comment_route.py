@@ -40,7 +40,7 @@ def add_comment(post_id: str):
         abort(post_req.status_code)
 
     try:
-        post = PostDto.from_json(post_req.json()["post"])
+        post = PostDto.from_json(post_req.json()["data"])
     except:
         flash("Error al obtener la publicación", "danger")
         abort(500)
