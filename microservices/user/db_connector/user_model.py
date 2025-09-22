@@ -30,7 +30,7 @@ class User:
 
     def to_json(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "username": self.username,
             "bio": self.bio,
             "created_at": self.created_at.isoformat(),
