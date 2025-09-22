@@ -18,7 +18,7 @@ def list_comments(post_id: Optional[str], user_id: Optional[str], include_delete
     if user_id:
         q = q.filter(Comment.user_id == user_id)
     if not include_deleted:
-        q = q.filter(Comment.is_deleted == False)  # noqa: E712
+        q = q.filter(Comment.is_deleted == False) 
     q = q.order_by(desc(Comment.created_at))
     return q.paginate(page=page, per_page=per_page, error_out=False)
 
