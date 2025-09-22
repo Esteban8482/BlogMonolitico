@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class UserDto:
-    id: int
+    id: str
     username: str
     bio: str
     created_at: datetime

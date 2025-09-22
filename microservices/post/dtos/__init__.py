@@ -1,2 +1,2 @@
 from .UserDto import UserDto
-from .PostDto import PostDto
+from .api_res import ApiRes
