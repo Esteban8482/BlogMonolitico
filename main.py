@@ -189,6 +189,47 @@ def ensure_session_from_firebase_token():
 	session["user_id"] = user.id
 
 
+@app.before_request
+def require_login_everywhere():
+	"""Enforce login for all pages except auth/static endpoints and login page.
+
+	Esto evita que se vean páginas sin autenticación incluso si el JS del cliente no corre.
+	"""
+	# Permitir métodos preflight
+	if request.method == "OPTIONS":
+		return
+
+	# Usar nombre del endpoint para determinar si es público
+	public_endpoints = {
+		# Páginas públicas
+		"index",
+		"post_detail",
+		"profile",
+		# Autenticación/registro
+		"login",
+		"register",
+		"logout",  # permitir acceder incluso sin sesión para evitar bucles
+		# Endpoints AJAX de auth
+		"auth_session",
+		"auth_logout",
+		# Archivos estáticos
+		"static",
+	}
+
+	endpoint = request.endpoint  # puede ser None en algunos 404
+	path = request.path or "/"
+	if endpoint in public_endpoints or path == "/favicon.ico" or (path.startswith("/auth/") or path.startswith("/static/")):
+		return
+
+	# Si ya hay sesión, dejar pasar
+	if session.get("user_id"):
+		return
+
+	# Redirigir a login con next
+	next_url = request.url
+	return redirect(url_for("login", next=next_url))
+
+
 # =============================
 # RUTAS DE AUTENTICACIÓN
 # =============================
@@ -217,6 +258,10 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+	# Si ya hay sesión de servidor, evitar mostrar el login otra vez
+	if request.method == "GET" and session.get("user_id"):
+		next_url = request.args.get("next")
+		return redirect(next_url or url_for("index"))
 	if request.method == "POST":
 		username_or_email = request.form.get("username", "").strip()
 		password = request.form.get("password", "")
@@ -435,7 +480,10 @@ def inject_globals():
 		"apiKey": os.environ.get("FIREBASE_API_KEY", ""),
 		"authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
 		"projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
+		"storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", ""),
+		"messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
 		"appId": os.environ.get("FIREBASE_APP_ID", ""),
+		"measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", ""),
 	}
 	return {"current_user": current_user(), "now": datetime.utcnow(), "firebase_config": firebase_config}
 

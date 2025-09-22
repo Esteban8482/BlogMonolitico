@@ -2,14 +2,8 @@
 {% block title %}Login{% endblock %}
 {% block content %}
 <h1>Iniciar Sesión</h1>
-<form id="login-form" class="form">
-  <label>Email
-    <input type="email" name="email" required />
-  </label>
-  <label>Contraseña
-    <input type="password" name="password" required />
-  </label>
-  <button type="submit">Entrar</button>
-</form>
-<p>¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate</a></p>
+<p>Usa tu cuenta de Google para entrar.</p>
+<p id="login-status" style="margin:.5rem 0;color:#666"></p>
+<button id="google-signin" class="btn btn-google">Continuar con Google</button>
+<noscript>Necesitas habilitar JavaScript para autenticarte con Google.</noscript>
 {% endblock %}

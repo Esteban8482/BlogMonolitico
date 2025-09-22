@@ -9,7 +9,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
-    const firebaseConfig = {
+    // Config por defecto (válida) del proyecto. Los valores del entorno SOLO sobrescriben si son truthy.
+    const defaults = {
       apiKey: "AIzaSyDFiuc4X6_uIQq2DzbaKxrxQ-7sIzSX7s4",
       authDomain: "chatdistribuido-6d4ed.firebaseapp.com",
       projectId: "chatdistribuido-6d4ed",
@@ -18,10 +19,23 @@
       appId: "1:906064184156:web:100eaa405c262b97417799",
       measurementId: "G-V0Z5L0PVB5"
     };
+    const envCfg = {{ firebase_config|tojson|safe }};
+    const firebaseConfig = { ...defaults };
+    if (envCfg && typeof envCfg === 'object') {
+      for (const [k, v] of Object.entries(envCfg)) {
+        if (v) firebaseConfig[k] = v; // evita sobreescribir con strings vacíos
+      }
+    }
     window.__FIREBASE_CONFIG__ = firebaseConfig;
-    const app = initializeApp(firebaseConfig);
-    try { getAnalytics(app); } catch (_) { /* analytics opcional */ }
-    window.__FIREBASE_APP_READY__ = true;
+    try {
+      const app = initializeApp(firebaseConfig);
+      try { getAnalytics(app); } catch (_) { /* analytics opcional */ }
+      window.__FIREBASE_APP_READY__ = true;
+    } catch (e) {
+      console.error('Error inicializando Firebase', e);
+      window.__FIREBASE_APP_READY__ = false;
+      window.__FIREBASE_INIT_ERROR__ = String(e && e.message || e);
+    }
   </script>
   <script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
 </head>
@@ -34,7 +48,6 @@
       </form>
       <div id="user-links">
         <a href="{{ url_for('login') }}">Entrar</a>
-        <a href="{{ url_for('register') }}">Registro</a>
       </div>
     </div>
   </nav>

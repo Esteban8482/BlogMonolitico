@@ -1,15 +1,7 @@
 {% extends 'layout.html' %}
 {% block title %}Registro{% endblock %}
 {% block content %}
-<h1>Crear cuenta</h1>
-<form id="register-form" class="form">
-  <label>Email
-    <input type="email" name="email" required />
-  </label>
-  <label>Contraseña
-    <input type="password" name="password" required />
-  </label>
-  <button type="submit">Registrarme</button>
-</form>
-<p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
+<h1>Registro</h1>
+<p>El registro se realiza con tu cuenta de Google.</p>
+<a class="btn btn-google" href="{{ url_for('login') }}">Registrarme con Google</a>
 {% endblock %}
