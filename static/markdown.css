@@ -1,0 +1,69 @@
+/* Fondo claro y texto oscuro para los botones */
+.editor-toolbar {
+  background-color: #f6f8fa !important;
+  border: 1px solid #d0d7de;
+}
+
+.editor-toolbar button {
+  color: #24292e !important;
+  background-color: transparent !important;
+  border: none;
+}
+
+.editor-toolbar button:hover,
+.editor-toolbar button:focus {
+  background-color: #eaecef !important;
+  color: #0366d6 !important;
+}
+
+/*Iconos SVG dentro de los botones */
+.editor-toolbar button svg {
+  fill: #24292e !important;
+}
+
+/* Fondo del editor */
+.CodeMirror {
+  background-color: #ffffff;
+  color: #24292e;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+}
+
+.editor-preview {
+  background-color: #ffffff;
+  color: #24292e;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  padding: 1em;
+}
+
+.markdown-body {
+  padding: 1rem;
+  background: #fff;
+  color: #222;
+  border-radius: 6px;
+}
+
+.markdown-body pre {
+  background-color: #f6f8fa;
+  color: #24292e;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background-color: #f2f2f2;
+  color: #24292e;
+  padding: 0.5em;
+  border-radius: 4px;
+  display: block;
+  overflow-x: auto;
+}
+
+.markdown-body code {
+  background-color: #f6f8fa;
+  color: #24292e;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+}
