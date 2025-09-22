@@ -1,12 +1,52 @@
 {% extends 'layout.html' %} {% block title %}{{ post.title }}{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css"
+/>
+<style>
+  .markdown-body {
+    padding: 1rem;
+    background: #fff;
+    color: #222;
+    border-radius: 6px;
+  }
+
+  .markdown-body pre {
+    background-color: #f6f8fa; /* igual que code */
+    color: #24292e; /* texto oscuro */
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+
+  .markdown-body pre code {
+    background-color: #f2f2f2;
+    color: #24292e;
+    padding: 0.5em;
+    border-radius: 4px;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .markdown-body code {
+    background-color: #f6f8fa;
+    color: #24292e;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+  }
+</style>
+
 <article class="post-detail">
   <h1>{{ post.title }}</h1>
+
   <div class="meta">
     Por
     <a href="{{ url_for('user.profile', username=post.user_id) }}">{{ post.username }}</a> | {{
     post.created_at.strftime('%Y-%m-%d %H:%M') }}
   </div>
-  <div class="body">{{ post.content|replace('\n', '<br />')|safe }}</div>
+
+  <div class="body markdown-body">{{ markdown_content | safe }}</div>
+
   {% if current_user and current_user.id|string == post.user_id|string %}
   <div class="actions">
     <a href="{{ url_for('post.edit_post', post_id=post.id) }}">Editar</a>
@@ -21,8 +61,10 @@
   </div>
   {% endif %}
 </article>
+
 <section class="comments">
   <h2>Comentarios ({{ comments|length }})</h2>
+
   {% if current_user %}
   <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
     <textarea name="content" rows="3" placeholder="Escribe un comentario..." required></textarea>
@@ -31,6 +73,7 @@
   {% else %}
   <p><a href="{{ url_for('login.login') }}">Inicia sesión</a> para comentar.</p>
   {% endif %}
+
   <ul class="comment-list">
     {% for c in comments|sort(attribute='created_at') %}
     <li>
