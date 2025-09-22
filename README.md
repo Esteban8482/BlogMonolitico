@@ -42,6 +42,15 @@ python app.py
 
 Puerto por defecto: `5003`
 
+## Comentarios
+
+```bash
+cd microservices/comment
+python app.py
+```
+
+Puerto por defecto: `8091`
+
 ## Tests
 
 ```bash
@@ -67,7 +76,7 @@ black .
 
 - [Black](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter)
 
-## prettier (opcional) para formato automático de HTML, CSS y JS
+## prettier (opcional) para formato automático de CSS y JS
 
 ### Extensiones recomendadas
 
