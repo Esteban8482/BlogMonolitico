@@ -1,20 +1,47 @@
 from unittest.mock import patch, MagicMock
+from dtos import ApiRes
 
 
-def test_delete_post_success(client):
+def test_user_posts_success(client):
     mock_post = MagicMock()
-    mock_post.user_id = "1"
+    mock_post.to_json.return_value = {
+        "id": "abc123",
+        "title": "Título",
+        "content": "Contenido",
+        "created_at": "2025-09-21T14:00:00",
+        "updated_at": "2025-09-21T14:00:00",
+        "user_id": "1",
+        "username": "juan",
+    }
 
-    with patch("routes.post_route.get_post", return_value=mock_post):
-        with patch("routes.post_route.delete_post_service") as mock_delete:
-            response = client.post("/post/abc123/delete", headers={"X-User-ID": "1"})
-            assert response.status_code == 200
-            assert response.json["success"] is True
-            assert response.json["message"] == "Publicación eliminada"
-            mock_delete.assert_called_once_with(mock_post)
+    with patch(
+        "db_connector.PostRepository.get_user_posts",
+        return_value=ApiRes.success("OK", [mock_post]),
+    ):
+        response = client.get("/post/user/1")
+        assert response.status_code == 200
+        assert response.json["success"] is True
+        assert isinstance(response.json["data"], list)
+        assert response.json["data"][0]["id"] == "abc123"
 
 
-def test_delete_post_no_auth_header(client):
-    response = client.post("/post/abc123/delete")
-    assert response.status_code == 403
-    assert response.json["message"] == "No autorizado"
+def test_user_posts_not_found(client):
+    with patch(
+        "db_connector.PostRepository.get_user_posts",
+        return_value=ApiRes.not_found("No hay publicaciones"),
+    ):
+        response = client.get("/post/user/999")
+        assert response.status_code == 404
+        assert response.json["success"] is False
+        assert response.json["message"] == "No hay publicaciones"
+
+
+def test_user_posts_error(client):
+    with patch(
+        "db_connector.PostRepository.get_user_posts",
+        return_value=ApiRes.internal_error("Error al obtener publicaciones"),
+    ):
+        response = client.get("/post/user/1")
+        assert response.status_code == 500
+        assert response.json["success"] is False
+        assert response.json["message"] == "Error al obtener publicaciones"
