@@ -8,6 +8,7 @@ from flask import (
     abort,
 )
 import requests
+import markdown
 
 from services.comment_service import get_post_comments
 from helpers import current_user, login_required
@@ -87,8 +88,15 @@ def post_detail(post_id: str):
     except:
         flash("Error al obtener los comentarios", "danger")
 
+    markdown_content = markdown.markdown(
+        post.content, extensions=["extra", "codehilite", "tables"]
+    )
     return render_template(
-        "post_detail.html", post=post, user=current_user(), comments=comments
+        "post_detail.html",
+        post=post,
+        user=current_user(),
+        comments=comments,
+        markdown_content=markdown_content,
     )
 
 
