@@ -46,17 +46,20 @@ def profile(username: str):
             headers={"X-User-ID": str(current_user().id)},
         )
 
-        if posts_req.status_code != 200:
-            flash("Error al obtener las publicaciones", "error")
-            abort(404)
+        if not (posts_req.status_code >= 200 and posts_req.status_code < 300):
+            message = (
+                posts_req.json()["message"]
+                if "message" in posts_req.json()
+                else "Error al obtener las publicaciones"
+            )
+            flash(message, "error")
 
         posts = []
 
         try:
-            posts = [PostDto.from_json(post) for post in posts_req.json()["posts"]]
+            posts = [PostDto.from_json(post) for post in posts_req.json()["data"]]
         except Exception as e:
-            print(e)
-            flash("Error al obtener las publicaciones", "error")
+            flash(f"Error al obtener las publicaciones {e}", "error")
 
         return render_template(
             "profile.html",

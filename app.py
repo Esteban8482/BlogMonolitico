@@ -56,22 +56,22 @@ def create_app(config_override=None):
         post_req = requests.get(
             f"{ServicesConfig.POST_SERVICE_URL}/post/limit/25?title={query}"
         )
+
         posts = []
 
-        if post_req.status_code >= 200 and post_req.status_code < 300:
-            posts = post_req.json()["posts"]
-        else:
-            try:
-                message = post_req.json()["message"]
-            except:
-                message = "Error al obtener las publicaciones"
-
-            flash(message, "danger")
-
         try:
-            posts = [PostDto.from_json(post) for post in posts]
+            if post_req.status_code >= 200 and post_req.status_code < 300:
+                posts = post_req.json()["data"]
+                posts = [PostDto.from_json(post) for post in posts]
+            else:
+                message = (
+                    post_req.json()["message"]
+                    if post_req.json()
+                    else "Error al obtener las publicaciones"
+                )
+                flash(message, "danger")
         except Exception as e:
-            flash(f"Error al obtener las publicaciones {e}", "danger")
+            flash(f"Error al obtener las publicaciones \n{e} \n\n{posts}", "danger")
             posts = []
 
         return render_template("index.html", posts=posts, user=current_user())

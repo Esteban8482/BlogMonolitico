@@ -40,7 +40,7 @@ def create_post():
             message = post_rq.json()["message"] if "message" in post_rq.json() else ""
             flash(message, "success")
 
-            post = PostDto.from_json(post_rq.json()["post"])
+            post = PostDto.from_json(post_rq.json()["data"])
             return redirect(url_for("post.post_detail", post_id=post.id))
         else:
             try:
@@ -74,7 +74,7 @@ def post_detail(post_id: str):
         abort(404)
 
     try:
-        post = PostDto.from_json(post_req.json()["post"])
+        post = PostDto.from_json(post_req.json()["data"])
     except:
         flash("Error al obtener la publicación", "danger"), abort(500)
         flash("Error al obtener la publicación", "danger")
@@ -108,7 +108,7 @@ def edit_post(post_id: str):
         post = None
 
         try:
-            post = PostDto.from_json(post_req.json()["post"])
+            post = PostDto.from_json(post_req.json()["data"])
         except Exception as e:
             print(f"======== Error al obtener la publicación ========\n{e}\n")
             flash("Error al obtener la publicación", "danger")
@@ -131,7 +131,7 @@ def edit_post(post_id: str):
         else:
             flash(post_req.json()["message"], "success")
 
-            post = PostDto.from_json(post_req.json()["post"])
+            post = PostDto.from_json(post_req.json()["data"])
             return redirect(url_for("post.post_detail", post_id=post.id))
 
 

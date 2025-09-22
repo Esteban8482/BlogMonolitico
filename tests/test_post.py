@@ -112,7 +112,7 @@ def test_post_detail_success(
         status_code=200,
         json=Mock(
             return_value={
-                "post": {
+                "data": {
                     "id": "p1",
                     "title": "Post 1",
                     "content": "Contenido",
