@@ -37,7 +37,7 @@ def profile(username: str):
         data = request.get_json()
         logger.info(f"======== profile POST ========\n{data=}\n")
 
-        if user.id != int(user_id):
+        if str(user.id) != str(user_id):
             return ApiRes.forbidden().flask_response()
 
         bio = data.get("bio", "")

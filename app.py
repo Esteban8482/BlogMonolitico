@@ -14,7 +14,6 @@ Este archivo contiene la configuración de la aplicación.
 import sys
 import os
 from datetime import datetime
-import requests
 
 from flask import (
     Flask,
@@ -25,8 +24,8 @@ from flask import (
 
 from db_connector import db
 from helpers import current_user
-from config import Config, DB_PATH, ServicesConfig
-from dtos import PostDto
+from config import Config, DB_PATH
+from services.post_service import get_post_limit
 
 
 def create_app(config_override=None):
@@ -53,25 +52,10 @@ def create_app(config_override=None):
     @app.route("/")
     def index():
         query = request.args.get("q", "").strip()
-        post_req = requests.get(
-            f"{ServicesConfig.POST_SERVICE_URL}/post/limit/25?title={query}"
-        )
+        posts = get_post_limit(25, query)
 
-        posts = []
-
-        try:
-            if post_req.status_code >= 200 and post_req.status_code < 300:
-                posts = post_req.json()["data"]
-                posts = [PostDto.from_json(post) for post in posts]
-            else:
-                message = (
-                    post_req.json()["message"]
-                    if post_req.json()
-                    else "Error al obtener las publicaciones"
-                )
-                flash(message, "danger")
-        except Exception as e:
-            flash(f"Error al obtener las publicaciones \n{e} \n\n{posts}", "danger")
+        if posts is None:
+            flash(f"Error al obtener las publicaciones", "danger")
             posts = []
 
         return render_template("index.html", posts=posts, user=current_user())
