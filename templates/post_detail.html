@@ -1,4 +1,9 @@
-{% extends 'layout.html' %} {% block title %}{{ post.title }}{% endblock %} {% block content %}
+{% extends 'layout.html' %}
+{% block title %}
+{{ post.title }}
+{% endblock %}
+
+{% block content %}
 <link
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css"
@@ -33,7 +38,14 @@
 </article>
 
 <section class="comments">
-  <h2>Comentarios ({{ comments|length }})</h2>
+  <h2>
+    Comentarios (
+    {% if comments is defined %}
+    {{ comments|length }}
+    {% else %}
+    {{post.comments|length }}
+    {% endif %} )
+  </h2>
 
   {% if current_user %}
   <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
@@ -45,14 +57,25 @@
   {% endif %}
 
   <ul class="comment-list">
-    {% for c in comments|sort(attribute='created_at') %}
+    {% if comments is defined %}
+    {# --- Comentarios desde microservicio --- #}
+    {% for c in comments%}
     <li>
       <div class="comment-meta">
+        {% if c.author is defined %}
         <a href="{{ url_for('user.profile', username=c.author.username) }}"
           >{{ c.author.username }}</a
         >
-        · {{ c.created_at.strftime('%Y-%m-%d %H:%M') }} {% if current_user and (current_user.id ==
-        c.author.id or current_user.id == post.user_id) %}
+        {% else %}
+        <span>Usuario {{ c.user_id }}</span>
+        {% endif %}
+
+        {% if c.created_at is string %}
+        {{ c.created_at[:16]|replace('T',' ') }}
+        {%else %}
+        {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+        {% endif %}
+        {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
         <form
           method="post"
           action="{{ url_for('comment.delete_comment', comment_id=c.id) }}"
@@ -66,6 +89,7 @@
       <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
     </li>
     {% endfor %}
+    {% endif %}
   </ul>
 </section>
 {% endblock %}

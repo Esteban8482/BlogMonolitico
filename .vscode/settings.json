@@ -1,11 +1,13 @@
 {
+   "emmet.includeLanguages": {"jinja-html": "html"},
+
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
   },
     "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
