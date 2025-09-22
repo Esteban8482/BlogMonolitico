@@ -1,6 +1,7 @@
 from flask import jsonify
 from typing import TypeVar, Generic, Optional, Union
 from log import logger
+import json
 
 T = TypeVar("T")
 
@@ -36,9 +37,14 @@ class ApiRes(Generic[T]):
 
     def to_json(self):
         try:
-            data_json = (
-                self.data.to_json() if hasattr(self.data, "to_json") else self.data
-            )
+            if type(self.data) == dict:
+                data_json = self.data
+            elif type(self.data) == list:
+                data_json = [x.to_json() for x in self.data]
+            else:
+                data_json = (
+                    self.data.to_json() if hasattr(self.data, "to_json") else self.data
+                )
         except Exception:
             data_json = self.data
 

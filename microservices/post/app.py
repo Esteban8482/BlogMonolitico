@@ -40,9 +40,6 @@ def create_app(config_override=None, init_db=True):
     return app
 
 
-app = create_app()
-
-
 def ensure_db():
     logger.info("Verificando conexión a Firestore...")
 
@@ -55,5 +52,6 @@ def ensure_db():
 
 
 if __name__ == "__main__":
+    app = create_app()
     ensure_db()
     app.run(debug=True, port=5003, use_reloader=True)
