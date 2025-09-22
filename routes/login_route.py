@@ -38,7 +38,7 @@ def register():
             )
 
             if user_req.status_code != 200:
-                flash("Error al crear el usuario en el microservicio", "danger")
+                flash("Error al crear el usuario", "danger")
                 return redirect(url_for("login.register"))
 
             flash("Registro exitoso. Inicia sesión.", "success")

@@ -36,7 +36,7 @@ def profile(username: str):
             abort(404)
 
         try:
-            user = UserDto.from_json(user_req.json()["profile_user"])
+            user = UserDto.from_json(user_req.json()["data"])
         except Exception as e:
             flash("Error al obtener el perfil", "error")
             abort(404)
@@ -72,9 +72,9 @@ def profile(username: str):
             json={"bio": request.form.get("bio", "")},
         )
 
-        if post_req.status_code == 200:
-            flash("Perfil actualizado", "success")
-        else:
+        if not (post_req.status_code >= 200 and post_req.status_code < 300):
             flash("Error al actualizar el perfil", "error")
+        else:
+            flash("Perfil actualizado", "success")
 
         return redirect(url_for("user.profile", username=username))

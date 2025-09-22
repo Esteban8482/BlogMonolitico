@@ -51,7 +51,7 @@ pytest
 
 ## Formato de código (opcional)
 
-Para formatear el código, se utiliza el linter `black`. Para instalarlo, instalar el requirements.txt o ejecutar:
+Para formatear el código, se utiliza el linter `black`:
 
 ```bash
 pip install black
@@ -78,6 +78,7 @@ black .
 Commits:
 
 ```bash
+pip install pre-commit
 pre-commit install
 ```
 

@@ -12,11 +12,7 @@ from datetime import datetime
 
 from flask import Flask
 
-from db_connector import (
-    db_check_user_firestore_connection,
-    db_init_user_firestore,
-    User,
-)
+from db_connector import db_check_user_firestore_connection, db_init_user_firestore
 from config import Config
 from log import logger
 
@@ -40,20 +36,17 @@ def create_app(config_override=None, init_db=True):
     return app
 
 
-app = create_app()
-
-
 def ensure_db():
     logger.info("Verificando conexión a Firestore...")
+    success = db_check_user_firestore_connection()
 
-    try:
-        db_check_user_firestore_connection()
+    if success:
         logger.info("Conexión a Firestore establecida.")
-    except Exception as e:
+    else:
         logger.error("No se pudo conectar a Firestore.")
-        logger.error("Error:", e)
 
 
 if __name__ == "__main__":
+    app = create_app()
     ensure_db()
     app.run(debug=True, port=5002, use_reloader=True)
