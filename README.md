@@ -1,6 +1,6 @@
-## Ejecución del proyecto localmente y ambiente de desarrollo
+# Ejecución del proyecto localmente y ambiente de desarrollo
 
-### Requerimientos
+## Requerimientos
 
 - Python 3.8+
 - Pip
@@ -14,7 +14,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Ejecución local
+# Ejecución local
+
+### Credenciales Firestore
+
+Para ejecutar la aplicación localmente, se deben proporcionar las credenciales en formato json de Firestore. Estas credenciales se pueden obtener de la consola de Firebase.
+
+```
+# en /microservices/user/.env
+FIREBASE_ADMIN_CREDENTIALS="ruta/al/credenciales.json"
+
+# en /microservices/post/.env
+FIREBASE_ADMIN_CREDENTIALS_POSTS="ruta/al/credenciales.json"
+```
+
+## Ejecución de la aplicación
 
 ```bash
 python app.py
