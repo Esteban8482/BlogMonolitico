@@ -2,6 +2,7 @@
 {% block title %}Login{% endblock %}
 {% block content %}
 <h1>Iniciar Sesión</h1>
+<<<<<<< HEAD
 <form method="post" class="form">
   <label>Usuario o Email
     <input type="text" name="username" required />
@@ -13,3 +14,9 @@
 </form>
 <p>¿No tienes cuenta? <a href="{{ url_for('login.register') }}">Regístrate</a></p>
 {% endblock %}
+=======
+<p id="login-status" class="muted">Usa el botón para continuar con Google. Tu sesión se sincronizará con el servidor.</p>
+<button id="google-signin" type="button">Continuar con Google</button>
+<p>¿No tienes cuenta? Crea una con Google o Email en el popup. <a href="{{ url_for('login.register') }}">Más opciones</a></p>
+{% endblock %}
+>>>>>>> main

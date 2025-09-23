@@ -6,6 +6,7 @@ from google.cloud import firestore
 
 COLL = "comments"
 
+
 def create_comment(user_id: str, post_id: str, content: str):
     content = (content or "").strip()
     if not content:
@@ -13,17 +14,20 @@ def create_comment(user_id: str, post_id: str, content: str):
 
     db = get_db()
     doc_ref = db.collection(COLL).document()
-    doc_ref.set({
-        "user_id": str(user_id),
-        "post_id": str(post_id),
-        "content": content,
-        "created_at": firestore.SERVER_TIMESTAMP,
-        "is_deleted": False,
-    })
+    doc_ref.set(
+        {
+            "user_id": str(user_id),
+            "post_id": str(post_id),
+            "content": content,
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "is_deleted": False,
+        }
+    )
 
     snap = doc_ref.get()
     data = snap.to_dict()
     return {"id": doc_ref.id, **data}
+
 
 def list_comments(
     post_id: Optional[str],
@@ -44,7 +48,6 @@ def list_comments(
 
     q = q.order_by("created_at", direction=firestore.Query.DESCENDING)
 
-
     snaps = q.limit(per_page).stream()
     items = []
     for s in snaps:
@@ -58,6 +61,7 @@ def list_comments(
         "total": len(items),
     }
 
+
 def get_comment(comment_id: str):
     db = get_db()
     snap = db.collection(COLL).document(str(comment_id)).get()
@@ -66,7 +70,10 @@ def get_comment(comment_id: str):
     d = snap.to_dict()
     return {"id": snap.id, **d}
 
-def update_comment(comment_id: str, user_id: str, content: Optional[str]) -> Tuple[Optional[dict], Optional[str]]:
+
+def update_comment(
+    comment_id: str, user_id: str, content: Optional[str]
+) -> Tuple[Optional[dict], Optional[str]]:
     db = get_db()
     doc_ref = db.collection(COLL).document(str(comment_id))
     snap = doc_ref.get()
@@ -85,6 +92,7 @@ def update_comment(comment_id: str, user_id: str, content: Optional[str]) -> Tup
 
     snap = doc_ref.get()
     return {"id": snap.id, **snap.to_dict()}, None
+
 
 def delete_comment(comment_id: str, requester_id: str, role: Optional[str]):
     db = get_db()

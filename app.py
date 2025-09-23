@@ -1,5 +1,6 @@
 """Aplicación monolítica de Blog con Flask.
 
+<<<<<<< HEAD
 Incluye gestión de Usuarios, Publicaciones y Comentarios en una sola base de datos.
 Archivo único `main.py` para mantener el enfoque monolítico solicitado.
 
@@ -7,11 +8,20 @@ Este archivo contiene la configuración de la aplicación.
     - Configuración de la base de datos
     - Registro de rutas
     - Inicialización de la base de datos
+=======
+Migrada para usar Firebase Authentication en lugar de una base de datos local
+para autenticación. Este archivo contiene la configuración de la aplicación.
+    - Registro de rutas
+    - Inicialización de Firebase Admin (Auth)
+>>>>>>> main
     - Error handlers
     - Context processors
 """
 
+<<<<<<< HEAD
 import sys
+=======
+>>>>>>> main
 import os
 from datetime import datetime
 
@@ -22,9 +32,16 @@ from flask import (
     flash,
 )
 
+<<<<<<< HEAD
 from db_connector import db
 from helpers import current_user
 from config import Config, DB_PATH
+=======
+import firebase_admin
+from firebase_admin import credentials
+from helpers import current_user
+from config import Config
+>>>>>>> main
 from services.post_service import get_post_limit
 
 
@@ -35,7 +52,24 @@ def create_app(config_override=None):
     if config_override:
         app.config.update(config_override)
 
+<<<<<<< HEAD
     db.init_app(app)
+=======
+    # Inicializar Firebase Admin si aún no está inicializado
+    try:
+        if not firebase_admin._apps:
+            cred_path = app.config.get("FIREBASE_ADMIN_CREDENTIALS")
+
+            if cred_path and os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+            else:
+                # Intento con variables de entorno (GOOGLE_APPLICATION_CREDENTIALS)
+                firebase_admin.initialize_app()
+    except Exception as e:
+        # No detenemos la app si falla; los endpoints de sesión reportarán el error
+        app.logger.error(f"Firebase Admin init failed: {e}")
+>>>>>>> main
 
     # registrar Blueprints
     from routes import login_api, post_api, comment_api, user_api
@@ -60,6 +94,7 @@ def create_app(config_override=None):
 
         return render_template("index.html", posts=posts, user=current_user())
 
+<<<<<<< HEAD
     # =============================
     # COMMAND UTIL / INIT
     # =============================
@@ -69,6 +104,8 @@ def create_app(config_override=None):
         db.create_all()
         print("Base de datos inicializada en", DB_PATH)
 
+=======
+>>>>>>> main
     @app.errorhandler(403)
     def forbidden(e):  # pragma: no cover
         return (
@@ -82,7 +119,34 @@ def create_app(config_override=None):
 
     @app.context_processor
     def inject_globals():
+<<<<<<< HEAD
         return {"current_user": current_user(), "now": datetime.utcnow()}
+=======
+        # Config opcional para Firebase Frontend (puede provenir de env)
+        fb_cfg = {
+            "apiKey": os.environ.get("FIREBASE_API_KEY"),
+            "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN"),
+            "projectId": os.environ.get("FIREBASE_PROJECT_ID"),
+            "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET"),
+            "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID"),
+            "appId": os.environ.get("FIREBASE_APP_ID"),
+            "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID"),
+        }
+
+        # El template decide si sobreescribe defaults; si están vacíos, se ignoran
+        return {
+            "current_user": current_user(),
+            "now": datetime.utcnow(),
+            "firebase_config": fb_cfg,
+        }
+
+    @app.after_request
+    def remove_coop_headers(response):
+        if request.path == "/login":  # o la ruta que renderiza tu template
+            response.headers.pop("Cross-Origin-Opener-Policy", None)
+            response.headers.pop("Cross-Origin-Embedder-Policy", None)
+        return response
+>>>>>>> main
 
     return app
 
@@ -90,6 +154,7 @@ def create_app(config_override=None):
 app = create_app()
 
 
+<<<<<<< HEAD
 def ensure_db():
     print("Verificando base de datos...")
 
@@ -103,4 +168,7 @@ def ensure_db():
 
 if __name__ == "__main__":
     ensure_db()
+=======
+if __name__ == "__main__":
+>>>>>>> main
     app.run(debug=True, port=5000, use_reloader=True)

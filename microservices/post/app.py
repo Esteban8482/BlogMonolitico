@@ -20,6 +20,7 @@ from db_connector import db_check_post_firestore_connection, db_init_post_firest
 from config import Config
 from log import logger
 from dotenv import load_dotenv
+
 load_dotenv()
 
 

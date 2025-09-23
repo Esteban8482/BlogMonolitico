@@ -15,8 +15,11 @@ from flask import Flask
 from db_connector import db_check_user_firestore_connection, db_init_user_firestore
 from config import Config
 from log import logger
+<<<<<<< HEAD
 from dotenv import load_dotenv
 load_dotenv()
+=======
+>>>>>>> main
 
 
 def create_app(config_override=None, init_db=True):

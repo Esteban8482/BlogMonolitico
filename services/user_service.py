@@ -95,3 +95,15 @@ def update_user_profile(username: str, bio: str) -> bool:
         return req.status_code >= 200 and req.status_code < 300
     except:
         return False
+
+
+def exist_user(user_id: str, username) -> bool:
+    try:
+        req = requests.get(
+            f"{ServicesConfig.USER_SERVICE_URL}/u/exists",
+            json={"id": user_id, "username": username},
+        )
+
+        return req.status_code >= 200 and req.status_code < 300
+    except:
+        return False

@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
-from services import comment_service  
+from services import comment_service
 
 bp = Blueprint("comments", __name__)
 
+
 def _user_id():
     return request.headers.get("X-User-Id")
+
 
 @bp.post("/comments")
 def create_comment():
@@ -19,7 +21,9 @@ def create_comment():
     if not post_id or not content:
         return jsonify({"error": "post_id y content son requeridos"}), 400
 
-    c = comment_service.create_comment(user_id=str(uid), post_id=post_id, content=content)
+    c = comment_service.create_comment(
+        user_id=str(uid), post_id=post_id, content=content
+    )
 
     return {
         "id": c["id"],
@@ -28,6 +32,7 @@ def create_comment():
         "content": c["content"],
         "created_at": c.get("created_at"),
     }, 201
+
 
 @bp.get("/comments/<string:comment_id>")
 def get_comment(comment_id: str):
@@ -42,6 +47,7 @@ def get_comment(comment_id: str):
         "created_at": c.get("created_at"),
     }
 
+
 @bp.patch("/comments/<string:comment_id>")
 def update_comment(comment_id: str):
     uid = _user_id()
@@ -51,7 +57,9 @@ def update_comment(comment_id: str):
     payload = request.get_json(silent=True) or {}
     content = payload.get("content")
 
-    updated, err = comment_service.update_comment(comment_id, user_id=str(uid), content=content)
+    updated, err = comment_service.update_comment(
+        comment_id, user_id=str(uid), content=content
+    )
     if err == "forbidden":
         return jsonify({"error": "Forbidden"}), 403
     if err == "invalid":
@@ -65,23 +73,27 @@ def update_comment(comment_id: str):
         "created_at": updated.get("created_at"),
     }
 
+
 @bp.delete("/comments/<string:comment_id>")
 def delete_comment(comment_id: str):
     uid = _user_id()
     if not uid:
         return jsonify({"error": "Unauthorized"}), 401
 
-    role = request.headers.get("X-User-Role")  
-    deleted, err = comment_service.delete_comment(comment_id, requester_id=str(uid), role=role)
+    role = request.headers.get("X-User-Role")
+    deleted, err = comment_service.delete_comment(
+        comment_id, requester_id=str(uid), role=role
+    )
     if err == "forbidden":
         return jsonify({"error": "Forbidden"}), 403
     return {"status": "deleted"}
 
+
 @bp.get("/comments")
 def list_comments():
     post_id = (request.args.get("post_id") or "").strip()
-    user_id = request.args.get("user_id")  
-    include_deleted = (request.args.get("include_deleted", "false").lower() == "true")
+    user_id = request.args.get("user_id")
+    include_deleted = request.args.get("include_deleted", "false").lower() == "true"
     try:
         page = int(request.args.get("page", 1))
     except Exception:

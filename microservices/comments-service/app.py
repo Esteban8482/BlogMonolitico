@@ -2,7 +2,9 @@ from flask import Flask
 from routes.comment_route import bp
 from db_connector import get_db
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 def create_app():
     app = Flask(__name__)
@@ -21,6 +23,7 @@ def create_app():
             return {"status": "degraded", "error": str(e)}, 503
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

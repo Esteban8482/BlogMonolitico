@@ -1,38 +1,26 @@
 """
-Auth Service
+Auth Service (deprecated for SQL/local auth).
 
-Desacoplar la lógica de autenticación de usuarios de la aplicación con los endpoints
-
-- Registro de usuario
-- Autenticación de usuario
-- Obtención de usuario por ID
+La autenticación ahora es manejada por Firebase Authentication (lado cliente)
+y verificada en el servidor mediante el Admin SDK. Este módulo queda como
+fachada mínima para evitar imports rotos, pero no debe usarse para crear o
+validar usuarios mediante base de datos local.
 """
 
-from db_connector import db, User
-from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Optional
+from db_connector import User
 
 
-def register_user(username: str, email: str, password: str) -> Optional[User]:
-    if User.query.filter((User.username == username) | (User.email == email)).first():
-        return None  # Usuario ya existe
-
-    user = User(username=username, email=email)
-    user.password_hash = generate_password_hash(password)
-    db.session.add(user)
-    db.session.commit()
-    return user
-
-
-def authenticate_user(username_or_email: str, password: str) -> Optional[User]:
-    user = User.query.filter(
-        (User.username == username_or_email) | (User.email == username_or_email.lower())
-    ).first()
-
-    if user and check_password_hash(user.password_hash, password):
-        return user
+def register_user(*args, **kwargs) -> Optional[User]:
+    """Registro de usuario debe realizarse en Firebase. Retorna None."""
     return None
 
 
-def get_user_by_id(user_id: int) -> Optional[User]:
-    return db.session.get(User, user_id)
+def authenticate_user(*args, **kwargs) -> Optional[User]:
+    """La autenticación se hace via Firebase. Retorna None."""
+    return None
+
+
+def get_user_by_id(*args, **kwargs) -> Optional[User]:
+    """Sin base de datos local, no se puede resolver por ID. Retorna None."""
+    return None
