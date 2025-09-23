@@ -85,42 +85,6 @@ import {
       }
     }
 
-    // Adjuntar token a peticiones POST de formularios protegidos si es posible
-    // function attachTokenToForms() {
-    //   const forms = document.querySelectorAll('form[method="post"]');
-
-    //   forms.forEach((f) => {
-    //     if (f.__tokenAttached) return;
-
-    //     f.__tokenAttached = true;
-
-    //     f.addEventListener(
-    //       "submit",
-    //       async (ev) => {
-    //         const user = auth.currentUser;
-
-    //         if (!user) return; // backend también valida sesión
-
-    //         try {
-    //           const token = await user.getIdToken();
-
-    //           if (!f.querySelector('input[name="__firebase_id_token"]')) {
-    //             const input = document.createElement("input");
-    //             input.type = "hidden";
-    //             input.name = "__firebase_id_token";
-    //             input.value = token;
-
-    //             f.appendChild(input);
-    //           }
-    //         } catch (e) {
-    //           console.error(`Error al obtener token attachTokenToForms`);
-    //         }
-    //       },
-    //       true
-    //     );
-    //   });
-    // }
-
     function currentPath() {
       try {
         return new URL(window.location.href).pathname;
@@ -214,13 +178,10 @@ import {
             return;
           }
         }
-
-        // attachTokenToForms();
       });
     } else {
       // Si Firebase no está listo, no forzar redirecciones para evitar bucles en /login
       updateNav(null);
-      // attachTokenToForms();
     }
 
     // Botón de Google Sign-In en /login
