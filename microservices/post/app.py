@@ -39,6 +39,10 @@ def create_app(config_override=None, init_db=True):
     from routes import post_api
 
     app.register_blueprint(post_api)
+    
+    @app.get("/health")
+    def health():
+        return {"status": "ok"}
 
     return app
 

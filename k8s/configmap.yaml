@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-config
+  namespace: blog
+data:
+  LOG_LEVEL: "info"
+  USERS_SERVICE_URL: ""
+  POSTS_SERVICE_URL: ""
+  COMMENTS_SERVICE_URL: ""
