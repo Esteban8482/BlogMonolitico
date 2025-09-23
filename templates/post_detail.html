@@ -78,7 +78,7 @@
         {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
         <form
           method="post"
-          action="{{ url_for('comment.delete_comment', comment_id=c.id) }}"
+          action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
           style="display: inline"
           onsubmit="return confirm('¿Eliminar comentario?');"
         >

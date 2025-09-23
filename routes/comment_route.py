@@ -49,11 +49,11 @@ def add_comment(post_id: str):
     return redirect(url_for("post.post_detail", post_id=post.id))
 
 
-@comment_api.route("/comment/<int:comment_id>/delete", methods=["POST"])
+@comment_api.route("/comment/<string:comment_id>/delete", methods=["POST"])
 @login_required
-def delete_comment(comment_id: int):
+def delete_comment(comment_id: str):
     try:
-        comment = get_comment_or_404(comment_id)
+        comment = get_comment_or_404(str(comment_id))
 
         if not is_comment_owner_or_post_owner(comment):
             abort(403)
