@@ -57,4 +57,4 @@ def ensure_db():
 if __name__ == "__main__":
     app = create_app()
     ensure_db()
-    app.run(debug=True, port=5003, use_reloader=True)
+    app.run(host="0.0.0.0", debug=True, port=5003, use_reloader=True)

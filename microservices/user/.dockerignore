@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+env/
+venv/
+.venv/
+build/
+dist/
+wheels/
+.mypy_cache/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Local creds (mount in compose)
+*.json
+.env
