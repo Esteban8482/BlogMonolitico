@@ -97,7 +97,7 @@ def create_app(config_override=None):
         # El template decide si sobreescribe defaults; si están vacíos, se ignoran
         return {
             "current_user": current_user(),
-            "now": datetime.utcnow(),
+            "now": datetime.now(),
             "firebase_config": fb_cfg,
         }
 
