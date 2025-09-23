@@ -16,7 +16,7 @@
 
   <div class="meta">
     Por
-    <a href="{{ url_for('user.profile', username=post.user_id) }}">{{ post.username }}</a> | {{
+    <a href="{{ url_for('user.profile', username=post.username) }}">{{ post.username }}</a> | {{
     post.created_at.strftime('%Y-%m-%d %H:%M') }}
   </div>
 
