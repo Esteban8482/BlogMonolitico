@@ -58,7 +58,6 @@
       <span id="user-links">
         <a href="{{ url_for('user.profile', username=current_user.username) }}">Nuevo Post</a>
         <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
-        <!-- <a href="{{ url_for('login.auth_logout') }}">Salir</a> -->
         <a id="logout-link">Salir</a>
       </span>
       {% else %}

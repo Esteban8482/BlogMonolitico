@@ -52,10 +52,13 @@ def auth_session():
         return jsonify({"ok": False, "error": "missing idToken"}), 400
 
     try:
+        # desfasar la respuesta para que firebase no marque el token como usado muy reciente
+        decoded = admin_auth.verify_id_token(id_token, clock_skew_seconds=5)
+
         # Preferimos displayName; si no, parte local de email como fallback
-        decoded = admin_auth.verify_id_token(id_token)
         display_name = decoded.get("name") or decoded.get("displayName")
-    except:
+    except Exception as e:
+        print("==================== ERROR", e)
         flash("Error al iniciar sesión", "danger")
         return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
 
