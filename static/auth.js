@@ -189,6 +189,7 @@ import {
           }
         } else {
           sessionStorage.removeItem('firebaseIdToken')
+
           await fetch('/auth/logout', { method: 'POST' }).catch(() => {})
           window.__SERVER_SESSION_OK__ = false
           redirectUnauthedToLogin(user)

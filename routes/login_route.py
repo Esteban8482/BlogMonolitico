@@ -23,7 +23,7 @@ login_api = Blueprint("login", __name__)
 def register():
     # Se recomienda registrar la cuenta con Firebase en el frontend.
     # Luego, al iniciar sesión, crearemos el perfil en el microservicio de usuarios.
-    return render_template("register.html")
+    return render_template("login.html")
 
 
 @login_api.route("/login", methods=["GET"])  # Login via Firebase JS (Google/Email)
@@ -32,14 +32,6 @@ def login():
         return redirect(url_for("index"))
 
     return render_template("login.html")
-
-
-# @login_api.route("/logout")
-# def logout():
-#     # Mantener compatibilidad de enlace, pero ahora la sesión real se limpia en /auth/logout (POST)
-#     session.clear()
-#     flash("Sesión cerrada", "info")
-#     return redirect(url_for("index"))
 
 
 # Endpoints para sincronizar sesión con Firebase Auth (usados por static/auth.js)

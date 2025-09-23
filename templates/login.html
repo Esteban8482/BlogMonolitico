@@ -2,7 +2,20 @@
 {% block title %}Login{% endblock %}
 {% block content %}
 <h1>Iniciar Sesión</h1>
-<p id="login-status" class="muted">Usa el botón para continuar con Google. Tu sesión se sincronizará con el servidor.</p>
-<button id="google-signin" type="button">Continuar con Google</button>
-<p>¿No tienes cuenta? Crea una con Google o Email en el popup. <a href="{{ url_for('login.register') }}">Más opciones</a></p>
+
+<p id="login-status" class="muted">
+</p>
+
+<button id="google-signin" type="button">
+    <img src="{{ url_for('static', filename='google.png') }}" alt="">
+    <span>
+        Continuar con Google
+    </span>
+</button>
+
+<p>
+    ¿No tienes cuenta?
+    <br>
+    Crea una con Google o Email en el popup.
+</p>
 {% endblock %}
