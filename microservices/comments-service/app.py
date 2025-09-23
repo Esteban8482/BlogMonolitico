@@ -21,6 +21,10 @@ def create_app():
             return {"status": "ok"}
         except Exception as e:
             return {"status": "degraded", "error": str(e)}, 503
+        
+    @app.get("/live")
+    def live():
+        return {"status": "ok"}
 
     return app
 

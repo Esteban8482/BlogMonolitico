@@ -1,18 +1,18 @@
-# k8s/post/deployment.yaml
+# k8s/user/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: post
+  name: user
   namespace: blog
 spec:
   replicas: 2
-  selector: { matchLabels: { app: post } }
+  selector: { matchLabels: { app: user } }
   template:
-    metadata: { labels: { app: post } }
+    metadata: { labels: { app: user } }
     spec:
       containers:
-        - name: post
-          image: blog/post:dev
+        - name: user
+          image: blog/user:dev
           imagePullPolicy: IfNotPresent
           ports: [{ containerPort: 8080 }]
           env:
@@ -25,24 +25,24 @@ spec:
               mountPath: /var/secrets/firebase
               readOnly: true
           readinessProbe:
-            httpGet: { path: /health, port: 8080 }
+            httpGet: { path: /health, port: 8080 }   
             initialDelaySeconds: 5
           livenessProbe:
-            httpGet: { path: /live, port: 8080 }
+            httpGet: { path: /live, port: 8080 }   
             initialDelaySeconds: 15
       volumes:
         - name: firebase-key
           secret:
-            secretName: firebase-post
+            secretName: firebase-user
 ---
-# k8s/post/service.yaml
+# k8s/user/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: post
+  name: user
   namespace: blog
 spec:
-  selector: { app: post }
+  selector: { app: user }
   ports:
     - name: http
       port: 8080

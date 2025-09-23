@@ -107,6 +107,14 @@ def create_app(config_override=None):
             response.headers.pop("Cross-Origin-Opener-Policy", None)
             response.headers.pop("Cross-Origin-Embedder-Policy", None)
         return response
+    
+    @app.get("/health")
+    def heatlh():
+        return {"status": "ok"}
+    
+    @app.get("/live")
+    def live():
+        return {"status": "ok"}
 
     return app
 

@@ -39,6 +39,11 @@ def create_app(config_override=None, init_db=True):
     @app.get("/health")
     def health():
         return {"status": "ok"}
+    
+
+    @app.get("/live")
+    def live():
+        return {"status": "ok"}
 
     return app
 

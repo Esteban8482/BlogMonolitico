@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-config
+  namespace: blog
+data:
+  LOG_LEVEL: "info"
+  USERS_SERVICE_URL: "http://user.blog.svc.cluster.local:8080"
+  POSTS_SERVICE_URL: "http://post.blog.svc.cluster.local:8080"
+  COMMENTS_SERVICE_URL: "http://comment.blog.svc.cluster.local:8080"
