@@ -13,26 +13,15 @@ import {
   window.__SERVER_SESSION_OK__ = false;
 
   function getFirebaseAuth() {
-    console.log("getFirebaseAuth");
-
     // Permite que se intente obtener auth si la app está lista; si no, null.
     if (!window.__FIREBASE_CONFIG__ || !window.__FIREBASE_APP_READY__) {
-      console.log("getFirebaseAuth NO OK");
       return null;
     }
 
-    console.log("getFirebaseAuth OK");
-
     try {
-      console.log("Intentando getAuth()");
-
       return getAuth();
     } catch (e) {
-      console("======================================");
-      console.log("getAuth() falló");
       console.error(e);
-      console("======================================");
-
       return null;
     }
   }
@@ -60,38 +49,27 @@ import {
   }
 
   function updateNav(user) {
-    const userLinks = document.getElementById("user-links");
+    const logoutLink = document.getElementById("logout-link");
 
-    if (!userLinks) return;
-
-    const serverOk = !!window.__SERVER_SESSION_OK__;
-
-    if (user && serverOk) {
-      userLinks.innerHTML = `
-        <a href="/post/new">Nueva Publicación</a>
-        <a href="/me">Perfil</a>
-        <a href="#" id="logout-link">Salir</a>
-      `;
-
-      const logoutLink = document.getElementById("logout-link");
-
-      if (logoutLink) {
-        logoutLink.addEventListener("click", function (e) {
-          e.preventDefault();
-
-          const auth = getFirebaseAuth();
-          if (!auth) return;
-
-          signOut(auth).catch((err) =>
-            alert("Error al cerrar sesión: " + err.message)
-          );
-        });
-      }
-    } else {
-      userLinks.innerHTML = `
-        <a href="/login">Entrar</a>
-      `;
+    if (!logoutLink) {
+      return;
     }
+
+    logoutLink.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const auth = getFirebaseAuth();
+      if (!auth) return;
+
+      signOut(auth).catch((err) =>
+        alert("Error al cerrar sesión: " + err.message)
+      );
+
+      // remover sesión del backend
+      fetch("/auth/logout", { method: "POST" }).then(() => {
+        window.location.href = "/login";
+      });
+    });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -108,39 +86,40 @@ import {
     }
 
     // Adjuntar token a peticiones POST de formularios protegidos si es posible
-    function attachTokenToForms() {
-      const forms = document.querySelectorAll('form[method="post"]');
+    // function attachTokenToForms() {
+    //   const forms = document.querySelectorAll('form[method="post"]');
 
-      forms.forEach((f) => {
-        if (f.__tokenAttached) return;
+    //   forms.forEach((f) => {
+    //     if (f.__tokenAttached) return;
 
-        f.__tokenAttached = true;
+    //     f.__tokenAttached = true;
 
-        f.addEventListener(
-          "submit",
-          async (ev) => {
-            const user = auth.currentUser;
+    //     f.addEventListener(
+    //       "submit",
+    //       async (ev) => {
+    //         const user = auth.currentUser;
 
-            if (!user) return; // backend también valida sesión
+    //         if (!user) return; // backend también valida sesión
 
-            try {
-              const token = await user.getIdToken();
+    //         try {
+    //           const token = await user.getIdToken();
 
-              if (!f.querySelector('input[name="__firebase_id_token"]')) {
-                const input = document.createElement("input");
-                input.type = "hidden";
-                input.name = "__firebase_id_token";
-                input.value = token;
-                f.appendChild(input);
-              }
-            } catch (e) {
-              console.error(`Error al obtener token attachTokenToForms: ${e}`);
-            }
-          },
-          true
-        );
-      });
-    }
+    //           if (!f.querySelector('input[name="__firebase_id_token"]')) {
+    //             const input = document.createElement("input");
+    //             input.type = "hidden";
+    //             input.name = "__firebase_id_token";
+    //             input.value = token;
+
+    //             f.appendChild(input);
+    //           }
+    //         } catch (e) {
+    //           console.error(`Error al obtener token attachTokenToForms`);
+    //         }
+    //       },
+    //       true
+    //     );
+    //   });
+    // }
 
     function currentPath() {
       try {
@@ -220,8 +199,7 @@ import {
             const el = document.getElementById("login-status");
 
             if (el) {
-              el.textContent =
-                "No se pudo crear la sesión en el servidor. Revisa la configuración del servidor (Firebase Admin).";
+              el.textContent = "Error Interno al crear la sesión.";
               el.style.color = "#b00020";
             }
           }
@@ -237,12 +215,12 @@ import {
           }
         }
 
-        attachTokenToForms();
+        // attachTokenToForms();
       });
     } else {
       // Si Firebase no está listo, no forzar redirecciones para evitar bucles en /login
       updateNav(null);
-      attachTokenToForms();
+      // attachTokenToForms();
     }
 
     // Botón de Google Sign-In en /login
@@ -288,7 +266,7 @@ import {
 
           if (el) {
             el.textContent =
-              "Iniciaste sesión con Google, pero el servidor no aceptó el token. Verifica Firebase Admin en el backend.";
+              "Error Interno al crear la sesión. Intenta de nuevo.";
             el.style.color = "#b00020";
           }
 

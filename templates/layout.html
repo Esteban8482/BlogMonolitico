@@ -12,18 +12,9 @@
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
     // Config por defecto (válida) del proyecto. Los valores del entorno SOLO sobrescriben si son truthy.
 
-    const defaults = {
-      apiKey: "AIzaSyDFiuc4X6_uIQq2DzbaKxrxQ-7sIzSX7s4",
-      authDomain: "chatdistribuido-6d4ed.firebaseapp.com",
-      projectId: "chatdistribuido-6d4ed",
-      storageBucket: "chatdistribuido-6d4ed.firebasestorage.app",
-      messagingSenderId: "906064184156",
-      appId: "1:906064184156:web:100eaa405c262b97417799",
-      measurementId: "G-V0Z5L0PVB5"
-    };
 
     const envCfg = {{ firebase_config|tojson|safe }};
-    const firebaseConfig = { ...defaults };
+    const firebaseConfig = { ...envCfg };
 
     if (envCfg && typeof envCfg === 'object') {
       for (const [k, v] of Object.entries(envCfg)) {
@@ -35,7 +26,14 @@
 
     try {
       const app = initializeApp(firebaseConfig);
-      try { getAnalytics(app); } catch (_) { /* analytics opcional */ }
+
+      try {
+        getAnalytics(app);
+      }
+      catch (_) {
+         /* analytics opcional */
+      }
+
       window.__FIREBASE_APP_READY__ = true;
     } catch (e) {
       console.error('Error inicializando Firebase', e);
@@ -43,19 +41,32 @@
       window.__FIREBASE_INIT_ERROR__ = String(e && e.message || e);
     }
   </script>
+
   <script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
 </head>
 
 <body>
   <nav class="navbar">
     <div class="nav-left"><a href="{{ url_for('index') }}" class="brand">MiniBlog</a></div>
+
     <div class="nav-right">
       <form method="get" action="{{ url_for('index') }}" class="search-form">
         <input type="text" name="q" placeholder="Buscar..." value="{{ q or '' }}" />
       </form>
+
+      {% if current_user %}
+      <span id="user-links">
+        <a href="{{ url_for('user.profile', username=current_user.username) }}">Nuevo Post</a>
+        <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
+        <!-- <a href="{{ url_for('login.auth_logout') }}">Salir</a> -->
+        <a id="logout-link">Salir</a>
+      </span>
+      {% else %}
       <span id="user-links"><a href="{{ url_for('login.login') }}">Entrar</a></span>
+      {% endif %}
     </div>
   </nav>
+
   <main class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -66,8 +77,10 @@
     </ul>
     {% endif %}
     {% endwith %}
-    {% block content %}{% endblock %}
+    {% block content %}
+    {% endblock %}
   </main>
+
   <footer class="footer">&copy; {{ now.year }} MiniBlog</footer>
 </body>
 </html>
