@@ -2,6 +2,9 @@
 .editor-toolbar {
   background-color: #f6f8fa !important;
   border: 1px solid #d0d7de;
+  position: sticky;
+  top: 4rem;
+  z-index: 100;
 }
 
 .editor-toolbar button {

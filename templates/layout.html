@@ -47,21 +47,30 @@
 
 <body>
   <nav class="navbar">
-    <div class="nav-left"><a href="{{ url_for('index') }}" class="brand">MiniBlog</a></div>
+    <div class="nav-left">
+      <img src="{{ url_for('static', filename='book.svg') }}" alt="MiniBlog" />
+      <a href="{{ url_for('index') }}" class="brand">MiniBlog</a>
+    </div>
 
     <div class="nav-right">
       <form method="get" action="{{ url_for('index') }}" class="search-form">
-        <input type="text" name="q" placeholder="Buscar..." value="{{ q or '' }}" />
+        <input id="input-search" type="text" name="q" placeholder="Buscar..." value="{{ q or '' }}" />
       </form>
 
       {% if current_user %}
-      <span id="user-links">
-        <a href="{{ url_for('post.create_post') }}">Nuevo Post</a>
+      <div id="user-links">
+        <a href="{{ url_for('post.create_post') }}">
+          <img src="{{ url_for('static', filename='plus.svg') }}" style="width: 20px; height: 20px;" alt="">
+          Nuevo Post
+        </a>
         <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
         <a id="logout-link">Salir</a>
-      </span>
+      </div>
       {% else %}
-      <span id="user-links"><a href="{{ url_for('login.login') }}">Entrar</a></span>
+      <a id="login-link" href="{{ url_for('login.login') }}">
+        <img src="{{ url_for('static', filename='logging.svg') }}" alt="">
+        <span>Entrar</a>
+      </span>
       {% endif %}
     </div>
   </nav>
