@@ -1,49 +1,103 @@
 from typing import Optional, Tuple
-from sqlalchemy import desc
-from db_connector import db
-from models import Comment
+from datetime import datetime
+from flask import abort
+from db_connector import get_db
+from google.cloud import firestore
 
+COLL = "comments"
 
-def create_comment(user_id: str, post_id: str, content: str) -> Comment:
-    c = Comment(user_id=user_id, post_id=post_id, content=content)
-    db.session.add(c)
-    db.session.commit()
-    return c
+def create_comment(user_id: str, post_id: str, content: str):
+    content = (content or "").strip()
+    if not content:
+        abort(400, "Comentario vacío")
 
+    db = get_db()
+    doc_ref = db.collection(COLL).document()
+    doc_ref.set({
+        "user_id": str(user_id),
+        "post_id": str(post_id),
+        "content": content,
+        "created_at": firestore.SERVER_TIMESTAMP,
+        "is_deleted": False,
+    })
 
-def list_comments(post_id: Optional[str], user_id: Optional[str], include_deleted: bool, page: int, per_page: int):
-    q = Comment.query
+    snap = doc_ref.get()
+    data = snap.to_dict()
+    return {"id": doc_ref.id, **data}
+
+def list_comments(
+    post_id: Optional[str],
+    user_id: Optional[str],
+    include_deleted: bool,
+    page: int,
+    per_page: int,
+):
+    db = get_db()
+    q = db.collection(COLL)
+
     if post_id:
-        q = q.filter(Comment.post_id == post_id)
+        q = q.where("post_id", "==", str(post_id))
     if user_id:
-        q = q.filter(Comment.user_id == user_id)
+        q = q.where("user_id", "==", str(user_id))
     if not include_deleted:
-        q = q.filter(Comment.is_deleted == False) 
-    q = q.order_by(desc(Comment.created_at))
-    return q.paginate(page=page, per_page=per_page, error_out=False)
+        q = q.where("is_deleted", "==", False)
+
+    q = q.order_by("created_at", direction=firestore.Query.DESCENDING)
 
 
-def get_comment(comment_id: int) -> Comment:
-    return Comment.query.get_or_404(comment_id)
+    snaps = q.limit(per_page).stream()
+    items = []
+    for s in snaps:
+        d = s.to_dict()
+        items.append({"id": s.id, **d})
 
+    return {
+        "items": items,
+        "page": page,
+        "per_page": per_page,
+        "total": len(items),
+    }
 
-def update_comment(comment_id: int, user_id: str, content: Optional[str]) -> Tuple[Optional[Comment], Optional[str]]:
-    c = Comment.query.get_or_404(comment_id)
-    if c.user_id != user_id:
+def get_comment(comment_id: str):
+    db = get_db()
+    snap = db.collection(COLL).document(str(comment_id)).get()
+    if not snap.exists:
+        abort(404, "Comentario no encontrado")
+    d = snap.to_dict()
+    return {"id": snap.id, **d}
+
+def update_comment(comment_id: str, user_id: str, content: Optional[str]) -> Tuple[Optional[dict], Optional[str]]:
+    db = get_db()
+    doc_ref = db.collection(COLL).document(str(comment_id))
+    snap = doc_ref.get()
+    if not snap.exists:
+        abort(404)
+
+    data = snap.to_dict()
+    if data["user_id"] != str(user_id):
         return None, "forbidden"
+
     if content is not None:
         content = content.strip()
         if not content:
             return None, "invalid"
-        c.content = content
-        db.session.commit()
-    return c, None
+        doc_ref.update({"content": content})
 
+    snap = doc_ref.get()
+    return {"id": snap.id, **snap.to_dict()}, None
 
-def delete_comment(comment_id: int, requester_id: str, role: Optional[str]) -> Tuple[Optional[Comment], Optional[str]]:
-    c = Comment.query.get_or_404(comment_id)
-    if c.user_id != requester_id and role != "moderator":
+def delete_comment(comment_id: str, requester_id: str, role: Optional[str]):
+    db = get_db()
+    doc_ref = db.collection(COLL).document(str(comment_id))
+    snap = doc_ref.get()
+    if not snap.exists:
+        abort(404)
+
+    data = snap.to_dict()
+    if data["user_id"] != str(requester_id) and role != "moderator":
         return None, "forbidden"
-    c.is_deleted = True
-    db.session.commit()
-    return c, None
+
+    doc_ref.update({"is_deleted": True})
+
+    snap = doc_ref.get()
+    return {"id": snap.id, **snap.to_dict()}, None

@@ -1,6 +1,6 @@
+# routes/comment_route.py  (VERSIÓN FIRESTORE)
 from flask import Blueprint, request, jsonify
-from db_connector import db
-from models import Comment
+from services import comment_service  # ⬅️ usamos el service, no db/models
 
 bp = Blueprint("comments", __name__)
 
@@ -14,81 +14,89 @@ def create_comment():
         return jsonify({"error": "Unauthorized"}), 401
 
     data = request.get_json(silent=True) or {}
-    try:
-        post_id = int(data.get("post_id", 0))
-    except Exception:
-        return jsonify({"error": "post_id inválido"}), 400
-
+    post_id = str(data.get("post_id") or "").strip()
     content = (data.get("content") or "").strip()
+
     if not post_id or not content:
         return jsonify({"error": "post_id y content son requeridos"}), 400
 
-    c = Comment(post_id=post_id, user_id=str(uid), content=content)
-    db.session.add(c)
-    db.session.commit()
+    c = comment_service.create_comment(user_id=str(uid), post_id=post_id, content=content)
     return {
-        "id": c.id,
-        "post_id": c.post_id,
-        "user_id": c.user_id,
-        "content": c.content,
-        "created_at": c.created_at.isoformat(),
+        "id": c["id"],
+        "post_id": c["post_id"],
+        "user_id": c["user_id"],
+        "content": c["content"],
+        "created_at": c.get("created_at"),
     }, 201
 
-@bp.get("/comments/<int:comment_id>")
-def get_comment(comment_id: int):
-    c = Comment.query.get(comment_id)
-    if not c:
-        return jsonify({"error": "Not Found"}), 404
+@bp.get("/comments/<string:comment_id>")
+def get_comment(comment_id: str):
+    c = comment_service.get_comment(comment_id)
+    if c.get("is_deleted"):
+        return jsonify({"error": "Comment deleted"}), 404
     return {
-        "id": c.id,
-        "post_id": c.post_id,
-        "user_id": c.user_id,
-        "content": c.content,
-        "created_at": c.created_at.isoformat(),
+        "id": c["id"],
+        "post_id": c["post_id"],
+        "user_id": c["user_id"],
+        "content": c["content"],
+        "created_at": c.get("created_at"),
     }
 
-@bp.delete("/comments/<int:comment_id>")
-def delete_comment(comment_id: int):
+@bp.patch("/comments/<string:comment_id>")
+def update_comment(comment_id: str):
     uid = _user_id()
     if not uid:
         return jsonify({"error": "Unauthorized"}), 401
 
-    c = Comment.query.get(comment_id)
-    if not c:
-        return jsonify({"error": "Not Found"}), 404
+    payload = request.get_json(silent=True) or {}
+    content = payload.get("content")
 
-    role = request.headers.get("X-User-Role")
-    if str(c.user_id) != str(uid) and role != "moderator":
+    updated, err = comment_service.update_comment(comment_id, user_id=str(uid), content=content)
+    if err == "forbidden":
         return jsonify({"error": "Forbidden"}), 403
+    if err == "invalid":
+        return jsonify({"error": "Invalid content"}), 400
 
-    db.session.delete(c)
-    db.session.commit()
+    return {
+        "id": updated["id"],
+        "post_id": updated["post_id"],
+        "user_id": updated["user_id"],
+        "content": updated["content"],
+        "created_at": updated.get("created_at"),
+    }
+
+@bp.delete("/comments/<string:comment_id>")
+def delete_comment(comment_id: str):
+    uid = _user_id()
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    role = request.headers.get("X-User-Role") 
+    deleted, err = comment_service.delete_comment(comment_id, requester_id=str(uid), role=role)
+    if err == "forbidden":
+        return jsonify({"error": "Forbidden"}), 403
     return {"status": "deleted"}
 
 @bp.get("/comments")
 def list_comments():
+    post_id = (request.args.get("post_id") or "").strip()
+    user_id = request.args.get("user_id")  
+    include_deleted = (request.args.get("include_deleted", "false").lower() == "true")
     try:
-        post_id = int(request.args.get("post_id", "0"))
+        page = int(request.args.get("page", 1))
     except Exception:
-        post_id = 0
+        page = 1
+    try:
+        per_page = min(int(request.args.get("per_page", 10)), 100)
+    except Exception:
+        per_page = 10
 
-    if not post_id:
-        return {"items": [], "total": 0, "page": 1, "per_page": 0}
+    res = comment_service.list_comments(
+        post_id=post_id or None,
+        user_id=user_id or None,
+        include_deleted=include_deleted,
+        page=page,
+        per_page=per_page,
+    )
 
-    q = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.asc())
-    rows = q.all()
-
-    items = [{
-        "id": c.id,
-        "post_id": c.post_id,
-        "user_id": c.user_id,
-        "content": c.content,
-        "created_at": c.created_at.isoformat(),
-    } for c in rows]
-
-    return {
-        "items": items,
-        "total": len(items),
-        "page": 1,
-        "per_page": len(items),
-    }
+    return res
