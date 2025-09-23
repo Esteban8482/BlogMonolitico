@@ -7,7 +7,7 @@ from google.cloud import firestore
 COLL = "comments"
 
 
-def create_comment(user_id: str, post_id: str, content: str):
+def create_comment(user_id: str, post_id: str, content: str, username: str):
     content = (content or "").strip()
     if not content:
         abort(400, "Comentario vacío")
@@ -21,6 +21,7 @@ def create_comment(user_id: str, post_id: str, content: str):
             "content": content,
             "created_at": firestore.SERVER_TIMESTAMP,
             "is_deleted": False,
+            "username": username,
         }
     )
 

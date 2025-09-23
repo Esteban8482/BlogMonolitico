@@ -9,20 +9,20 @@ COMMENTS_BASE = os.getenv("COMMENTS_BASE", "http://localhost:8091/v1")
 
 
 class CommentDto:
-    def __init__(self, id, post_id, user_id, content, created_at):
+    def __init__(self, id, post_id, user_id, content, created_at, username):
         self.id = id
         self.post_id = post_id
         self.user_id = user_id
         self.content = content
         self.created_at = created_at
+        self.username = username
 
 
 def _headers_for_user(user):
     return {"X-User-Id": str(user.id)}
 
 
-def create_comment(post_id: str, content: str) -> CommentDto:
-    # Igual que antes: verificas que el post exista (regla de negocio local)
+def create_comment(post_id: str, content: str, username: str) -> CommentDto:
     post = get_post(str(post_id))
 
     if not post:
@@ -35,14 +35,14 @@ def create_comment(post_id: str, content: str) -> CommentDto:
     try:
         r = requests.post(
             f"{COMMENTS_BASE}/comments",
-            json={"post_id": post_id, "content": content},
+            json={"post_id": post_id, "content": content, "username": username},
             headers=_headers_for_user(user),
             timeout=5,
         )
         if r.status_code == 201:
             d = r.json()
             return CommentDto(
-                d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"]
+                d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"]
             )
         elif r.status_code == 401:
             abort(401)
@@ -59,7 +59,7 @@ def get_comment_or_404(comment_id: int) -> CommentDto:
     if r.status_code == 200:
         d = r.json()
         return CommentDto(
-            d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"]
+            d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"]
         )
     elif r.status_code == 404:
         abort(404)
@@ -122,6 +122,6 @@ def list_comments(post_id: str) -> list[CommentDto]:
     data = r.json()
     items = data.get("items", [])
     return [
-        CommentDto(d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"])
+        CommentDto(d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"])
         for d in items
     ]

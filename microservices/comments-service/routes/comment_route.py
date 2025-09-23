@@ -17,12 +17,13 @@ def create_comment():
     data = request.get_json(silent=True) or {}
     post_id = str(data.get("post_id") or "").strip()
     content = (data.get("content") or "").strip()
-
-    if not post_id or not content:
+    username = (data.get("username") or "").strip()
+    
+    if not post_id or not content or not username:
         return jsonify({"error": "post_id y content son requeridos"}), 400
 
     c = comment_service.create_comment(
-        user_id=str(uid), post_id=post_id, content=content
+        user_id=str(uid), post_id=post_id, content=content, username=username
     )
 
     return {
@@ -31,6 +32,7 @@ def create_comment():
         "user_id": c["user_id"],
         "content": c["content"],
         "created_at": c.get("created_at"),
+        "username": c.get("username"),
     }, 201
 
 
@@ -45,33 +47,34 @@ def get_comment(comment_id: str):
         "user_id": c["user_id"],
         "content": c["content"],
         "created_at": c.get("created_at"),
+        "username": c.get("username"),
     }
 
 
-@bp.patch("/comments/<string:comment_id>")
-def update_comment(comment_id: str):
-    uid = _user_id()
-    if not uid:
-        return jsonify({"error": "Unauthorized"}), 401
+# @bp.patch("/comments/<string:comment_id>")
+# def update_comment(comment_id: str):
+#     uid = _user_id()
+#     if not uid:
+#         return jsonify({"error": "Unauthorized"}), 401
 
-    payload = request.get_json(silent=True) or {}
-    content = payload.get("content")
+#     payload = request.get_json(silent=True) or {}
+#     content = payload.get("content")
 
-    updated, err = comment_service.update_comment(
-        comment_id, user_id=str(uid), content=content
-    )
-    if err == "forbidden":
-        return jsonify({"error": "Forbidden"}), 403
-    if err == "invalid":
-        return jsonify({"error": "Invalid content"}), 400
+#     updated, err = comment_service.update_comment(
+#         comment_id, user_id=str(uid), content=content
+#     )
+#     if err == "forbidden":
+#         return jsonify({"error": "Forbidden"}), 403
+#     if err == "invalid":
+#         return jsonify({"error": "Invalid content"}), 400
 
-    return {
-        "id": updated["id"],
-        "post_id": updated["post_id"],
-        "user_id": updated["user_id"],
-        "content": updated["content"],
-        "created_at": updated.get("created_at"),
-    }
+#     return {
+#         "id": updated["id"],
+#         "post_id": updated["post_id"],
+#         "user_id": updated["user_id"],
+#         "content": updated["content"],
+#         "created_at": updated.get("created_at"),
+#     }
 
 
 @bp.delete("/comments/<string:comment_id>")

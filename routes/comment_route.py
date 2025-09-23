@@ -39,7 +39,7 @@ def add_comment(post_id: str):
     if not content:
         flash("Comentario vacío", "danger")
     else:
-        comment = create_comment(post_id, content)
+        comment = create_comment(post_id, content, username=session.get("username"))
 
         if not comment:
             flash("Error al agregar el comentario", "danger")
