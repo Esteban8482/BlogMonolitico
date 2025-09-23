@@ -36,6 +36,7 @@ def create_app(config_override=None):
     try:
         if not firebase_admin._apps:
             cred_path = app.config.get("FIREBASE_ADMIN_CREDENTIALS")
+
             if cred_path and os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)
                 firebase_admin.initialize_app(cred)
@@ -92,12 +93,20 @@ def create_app(config_override=None):
             "appId": os.environ.get("FIREBASE_APP_ID"),
             "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID"),
         }
+
         # El template decide si sobreescribe defaults; si están vacíos, se ignoran
         return {
             "current_user": current_user(),
             "now": datetime.utcnow(),
             "firebase_config": fb_cfg,
         }
+
+    @app.after_request
+    def remove_coop_headers(response):
+        if request.path == "/login":  # o la ruta que renderiza tu template
+            response.headers.pop("Cross-Origin-Opener-Policy", None)
+            response.headers.pop("Cross-Origin-Embedder-Policy", None)
+        return response
 
     return app
 

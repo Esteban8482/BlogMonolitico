@@ -9,7 +9,8 @@ from flask import (
     jsonify,
 )
 from firebase_admin import auth as admin_auth
-from services.user_service import create_user_profile
+from services.user_service import create_user_profile, exist_user
+from helpers import current_user
 
 login_api = Blueprint("login", __name__)
 
@@ -27,15 +28,18 @@ def register():
 
 @login_api.route("/login", methods=["GET"])  # Login via Firebase JS (Google/Email)
 def login():
+    if current_user():
+        return redirect(url_for("index"))
+
     return render_template("login.html")
 
 
-@login_api.route("/logout")
-def logout():
-    # Mantener compatibilidad de enlace, pero ahora la sesión real se limpia en /auth/logout (POST)
-    session.clear()
-    flash("Sesión cerrada", "info")
-    return redirect(url_for("index"))
+# @login_api.route("/logout")
+# def logout():
+#     # Mantener compatibilidad de enlace, pero ahora la sesión real se limpia en /auth/logout (POST)
+#     session.clear()
+#     flash("Sesión cerrada", "info")
+#     return redirect(url_for("index"))
 
 
 # Endpoints para sincronizar sesión con Firebase Auth (usados por static/auth.js)
@@ -43,30 +47,46 @@ def logout():
 def auth_session():
     data = request.get_json(silent=True) or {}
     id_token = data.get("idToken")
+
     if not id_token:
         return jsonify({"ok": False, "error": "missing idToken"}), 400
+
     try:
-        decoded = admin_auth.verify_id_token(id_token)
-        # Guardamos lo esencial en sesión
-        session["user_id"] = decoded.get("uid")
-        session["email"] = decoded.get("email")
         # Preferimos displayName; si no, parte local de email como fallback
+        decoded = admin_auth.verify_id_token(id_token)
         display_name = decoded.get("name") or decoded.get("displayName")
-        if not display_name:
-            email = decoded.get("email") or ""
-            display_name = email.split("@")[0] if "@" in email else (decoded.get("uid") or "user")
-        session["username"] = display_name
+    except:
+        flash("Error al iniciar sesión", "danger")
+        return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
 
-        # Crear perfil de usuario en microservicio si no existe (best-effort)
-        try:
-            if display_name and decoded.get("uid"):
-                create_user_profile(str(decoded["uid"]), str(display_name))
-        except Exception:
-            pass
+    if not display_name:
+        email = decoded.get("email") or ""
+        display_name = (
+            email.split("@")[0] if "@" in email else (decoded.get("uid") or "user")
+        )
 
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 401
+    # Guardamos lo esencial en sesión
+    session["user_id"] = decoded.get("uid")
+    session["email"] = decoded.get("email")
+    session["username"] = display_name
+
+    # microservicio de usuarios, si existe evitar agregarlo y redirigir
+    if exist_user(decoded["uid"], display_name):
+        return jsonify({"ok": True, "redirect": url_for("index")})
+    elif not (display_name and decoded.get("uid")):
+        session.clear()
+        flash("Error al crear perfil de usuario o iniciar sesión", "danger")
+        return jsonify({"ok": False, "redirect": url_for("login.login")})
+
+    # Crear perfil de usuario en microservicio si no existe (best-effort)
+    user = create_user_profile(str(decoded["uid"]), str(display_name))
+
+    if not user:
+        session.clear()
+        flash("Error al crear perfil de usuario o iniciar sesión", "danger")
+        return jsonify({"ok": False, "redirect": url_for("login.login")})
+
+    return jsonify({"ok": True, "redirect": url_for("index")})
 
 
 @login_api.route("/auth/logout", methods=["POST"])

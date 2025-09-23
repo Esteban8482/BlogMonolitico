@@ -76,3 +76,21 @@ def register_user():
 
     logger.info(f"======== Usuario creado ========\n{user=}\n")
     return ApiRes.success("Usuario creado", data=user).flask_response()
+
+
+@user_api.route("/u/exists", methods=["GET"])
+def exists_by_username_or_id():
+    data = request.get_json()
+    user_id = data.get("id")
+    username = data.get("username")
+
+    if not user_id and not username:
+        return ApiRes.error(
+            "Completa todos los campos necesarios (id, username)"
+        ).flask_response()
+
+    logger.info(f"======== Buscando usuario ========\n{user_id=}\n{username=}\n")
+    res = UserRepository.exists_by_username_or_id(user_id, username)
+    logger.info(f"======== Usuario encontrado ========\n{res=}\n")
+
+    return res.flask_response()
