@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class UserDto:
-    id: int
+    id: str  # Firebase UID
     username: str
     bio: str
     created_at: datetime
@@ -12,8 +12,8 @@ class UserDto:
     @classmethod
     def from_json(cls, json: dict):
         return cls(
-            id=json["id"],
+            id=str(json["id"]),
             username=json["username"],
-            bio=json["bio"],
+            bio=json.get("bio", ""),
             created_at=datetime.fromisoformat(json["created_at"]),
         )
