@@ -1,6 +1,6 @@
-## Ejecución del proyecto localmente y ambiente de desarrollo
+# Ejecución del proyecto localmente y ambiente de desarrollo
 
-### Requerimientos
+## Requerimientos
 
 - Python 3.8+
 - Pip
@@ -14,7 +14,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Ejecución local
+# Ejecución local
+
+### Credenciales Firestore
+
+Para ejecutar la aplicación localmente, se deben proporcionar las credenciales en formato json de Firestore. Estas credenciales se pueden obtener de la consola de Firebase.
+
+```
+# en /microservices/user/.env
+FIREBASE_ADMIN_CREDENTIALS="ruta/al/credenciales.json"
+
+# en /microservices/post/.env
+FIREBASE_ADMIN_CREDENTIALS_POSTS="ruta/al/credenciales.json"
+```
+
+## Ejecución de la aplicación
 
 ```bash
 python app.py
@@ -33,6 +47,24 @@ python app.py
 
 Puerto por defecto: `5002`
 
+### Post
+
+```bash
+cd microservices/post
+python app.py
+```
+
+Puerto por defecto: `5003`
+
+## Comentarios
+
+```bash
+cd microservices/comment
+python app.py
+```
+
+Puerto por defecto: `8091`
+
 ## Tests
 
 ```bash
@@ -42,7 +74,7 @@ pytest
 
 ## Formato de código (opcional)
 
-Para formatear el código, se utiliza el linter `black`. Para instalarlo, instalar el requirements.txt o ejecutar:
+Para formatear el código, se utiliza el linter `black`:
 
 ```bash
 pip install black
@@ -58,7 +90,7 @@ black .
 
 - [Black](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter)
 
-## prettier (opcional) para formato automático de HTML, CSS y JS
+## prettier (opcional) para formato automático de CSS y JS
 
 ### Extensiones recomendadas
 
@@ -69,6 +101,7 @@ black .
 Commits:
 
 ```bash
+pip install pre-commit
 pre-commit install
 ```
 

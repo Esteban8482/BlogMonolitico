@@ -2,3 +2,4 @@ Flask==3.0.3
 google-cloud-firestore==2.16.0
 google-auth==2.33.0
 gunicorn==22.0.0
+python-dotenv==1.0.1

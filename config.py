@@ -15,3 +15,4 @@ class Config:
 
 class ServicesConfig:
     USER_SERVICE_URL = os.environ.get("USER_SERVICE_URL", "http://localhost:5002")
+    POST_SERVICE_URL = os.environ.get("POST_SERVICE_URL", "http://localhost:5003")

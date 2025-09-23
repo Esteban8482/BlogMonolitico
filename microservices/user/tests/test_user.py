@@ -1,108 +1,70 @@
 from unittest.mock import patch, Mock
-from routes import user_route
 from datetime import datetime
 from db_connector import User
-from dtos import UserReqDto
+from dtos import ApiRes
 
 
 def mock_user(id=1, username="juan", bio="Hola", created_at=datetime(2025, 1, 1)):
-    user = Mock()
-    user.id = id
-    user.username = username
-    user.bio = bio
-    user.created_at = created_at
-    user.to_json.return_value = {
-        "id": id,
-        "username": username,
-        "bio": bio,
-        "created_at": created_at.isoformat(),
-    }
-
-    return user
+    return User(id=id, username=username, bio=bio, created_at=created_at)
 
 
-@patch("routes.user_route.get_user_or_404")
+@patch("db_connector.UserRepository.get_by_username")
 def test_get_user_profile(mock_get_user, client):
-    mock_user_data = mock_user()
-    mock_get_user.return_value = mock_user_data
+    mock_get_user.return_value = ApiRes.success("Usuario encontrado", data=mock_user())
 
-    response = client.get("/u/juan", headers={"X-User-ID": 1})
+    response = client.get("/u/juan", headers={"X-User-ID": "1"})
     assert response.status_code == 200
-    assert "Hola" in response.get_data(as_text=True)
-
-    user = UserReqDto.from_json(response.json["profile_user"])
-
-    assert user.id == 1
-    assert user.username == "juan"
+    assert response.json["success"]
+    assert response.json["message"] == "Perfil obtenido"
+    assert response.json["data"]["username"] == "juan"
 
 
-@patch("routes.user_route.update_user_bio")
-@patch("routes.user_route.get_user_or_404")
-def test_update_user_bio_success(mock_get_user, mock_update, client):
-    mock_user_data = mock_user(bio="")
-    mock_user_data_updated = mock_user(bio="Hola")
+@patch("db_connector.UserRepository.get_by_username")
+@patch("db_connector.UserRepository.save")
+def test_update_user_bio_success(mock_save, mock_get_user, client):
+    user = mock_user(bio="")
+    updated_user = mock_user(bio="Hola")
 
-    mock_get_user.return_value = mock_user_data
-    mock_update.return_value = mock_user_data_updated
+    mock_get_user.return_value = ApiRes.success("Usuario encontrado", data=user)
+    mock_save.return_value = ApiRes.success("Perfil actualizado", data=updated_user)
 
-    response = client.post(
-        "/u/juan", headers={"X-User-ID": 1}, json={"bio": "Hola"}, follow_redirects=True
-    )
+    response = client.post("/u/juan", headers={"X-User-ID": "1"}, json={"bio": "Hola"})
 
     assert response.status_code == 200
     assert response.json["success"]
     assert response.json["message"] == "Perfil actualizado"
-
-    user = User.from_json(response.json["profile_user"])
-    assert user.id == 1
-    assert user.username == "juan"
-    assert user.bio == "Hola"
+    assert response.json["data"]["bio"] == "Hola"
 
 
-@patch("routes.user_route.update_user_bio")
-@patch("routes.user_route.get_user_or_404")
-def test_update_user_bio_not_owner(mock_get_user, mock_update, client):
-    mock_user_owner = mock_user(id=2)
-    mock_get_user.return_value = mock_user_owner
+@patch("db_connector.UserRepository.get_by_username")
+def test_update_user_bio_not_owner(mock_get_user, client):
+    mock_get_user.return_value = ApiRes.success(
+        "Usuario encontrado", data=mock_user(id=2)
+    )
 
     response = client.post(
-        "/u/juan",
-        headers={"X-User-ID": 1},
-        json={"bio": "Nuevo bio"},
-        follow_redirects=True,
+        "/u/juan", headers={"X-User-ID": "1"}, json={"bio": "Nuevo bio"}
     )
 
     assert response.status_code == 403
-    mock_update.assert_not_called()
 
 
 def test_get_user_no_id(client):
     response = client.get("/u/juan")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
-@patch("routes.user_route.get_user_or_404")
-def test_get_user_no_username(mock_get_user, client):
-    mock_user_data = mock_user()
-    mock_get_user.return_value = mock_user_data
+@patch("db_connector.UserRepository.get_by_username")
+def test_get_user_not_found(mock_get_user, client):
+    mock_get_user.return_value = ApiRes.not_found("Usuario no encontrado")
 
-    response = client.get("/u/", headers={"X-User-ID": 1})
+    response = client.get("/u/juan", headers={"X-User-ID": "1"})
     assert response.status_code == 404
 
 
-def test_update_user_no_id(client):
-    response = client.post(
-        "/u/juan", headers={"X-User-ID": 1}, json={"bio": "Hola"}, follow_redirects=True
-    )
-    assert response.status_code == 404
+@patch("db_connector.UserRepository.get_by_username")
+def test_update_user_bio_not_found(mock_get_user, client):
+    mock_get_user.return_value = ApiRes.not_found("Usuario no encontrado")
 
-
-@patch("routes.user_route.get_user_or_404")
-def test_update_user_no_username(mock_get_user, client):
-    mock_user_data = mock_user()
-    mock_get_user.return_value = mock_user_data
-
-    response = client.post(
-        "/u/", headers={"X-User-ID": 1}, json={"bio": "Hola"}, follow_redirects=True
-    )
+    response = client.post("/u/juan", headers={"X-User-ID": "1"}, json={"bio": "Hola"})
     assert response.status_code == 404

@@ -6,9 +6,15 @@
   "trailingComma": "es5",
   "overrides": [
     {
-      "files": ["templates/**/*.html", "static/**/*.{css,js}"],
+      "files": "static/**/*.css",
       "options": {
-        "parser": "html"
+        "parser": "css"
+      }
+    },
+    {
+      "files": "static/**/*.js",
+      "options": {
+        "parser": "babel"
       }
     }
   ]

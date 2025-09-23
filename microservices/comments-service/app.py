@@ -1,7 +1,8 @@
-# app.py — versión Firestore (sin SQLAlchemy)
 from flask import Flask
 from routes.comment_route import bp
 from db_connector import get_db
+from dotenv import load_dotenv
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)

@@ -1,6 +1,5 @@
-# routes/comment_route.py  (VERSIÓN FIRESTORE)
 from flask import Blueprint, request, jsonify
-from services import comment_service  # ⬅️ usamos el service, no db/models
+from services import comment_service  
 
 bp = Blueprint("comments", __name__)
 
@@ -21,6 +20,7 @@ def create_comment():
         return jsonify({"error": "post_id y content son requeridos"}), 400
 
     c = comment_service.create_comment(user_id=str(uid), post_id=post_id, content=content)
+
     return {
         "id": c["id"],
         "post_id": c["post_id"],
@@ -71,7 +71,7 @@ def delete_comment(comment_id: str):
     if not uid:
         return jsonify({"error": "Unauthorized"}), 401
 
-    role = request.headers.get("X-User-Role") 
+    role = request.headers.get("X-User-Role")  
     deleted, err = comment_service.delete_comment(comment_id, requester_id=str(uid), role=role)
     if err == "forbidden":
         return jsonify({"error": "Forbidden"}), 403

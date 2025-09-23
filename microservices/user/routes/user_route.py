@@ -4,14 +4,10 @@ from flask import (
     abort,
     jsonify,
 )
-from services.user_service import (
-    get_user_or_404,
-    update_user_bio,
-    exists_user,
-    create_user,
-)
 
-from dtos import UserReqDto
+from db_connector import UserRepository, User
+from dtos import UserReqDto, ApiRes
+from log import logger
 
 user_api = Blueprint("user", __name__)
 
@@ -22,61 +18,61 @@ user_api = Blueprint("user", __name__)
 
 @user_api.route("/u/<username>", methods=["GET", "POST"])
 def profile(username: str):
-    print(f"======== Obteniendo perfil {username} ========")
-
     user_id = request.headers.get("X-User-ID")
-    print(f"======== id req {user_id} ========")
+
+    logger.info(f"======== Obteniendo perfil ========\n{username=} {user_id=}\n")
 
     if not user_id:
-        abort(403)
+        return ApiRes.unauthorized().flask_response()
 
-    user = get_user_or_404(username)
+    res = UserRepository.get_by_username(username)
 
-    if not user:
-        abort(404)
+    if not res:
+        return res.flask_response()
 
-    print(f"======== user {user} ========")
+    user = res.data
+    logger.info(f"======== user {user} ========")
 
     if request.method == "POST":
         data = request.get_json()
-        print(f"======== profile POST {data} ========")
+        logger.info(f"======== profile POST ========\n{data=}\n")
 
-        if user.id != int(user_id):
-            abort(403)
+        if str(user.id) != str(user_id):
+            return ApiRes.forbidden().flask_response()
 
         bio = data.get("bio", "")
-        user_updated = update_user_bio(user, bio)
+        user.bio = bio
+        res = UserRepository.save(user)
+        return res.flask_response()
 
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Perfil actualizado",
-                    "profile_user": user_updated.to_json(),
-                }
-            ),
-            200,
-        )
-
-    return jsonify({"success": True, "profile_user": user.to_json()}), 200
+    return ApiRes.success("Perfil obtenido", data=user).flask_response()
 
 
 @user_api.route("/u/new", methods=["POST"])
 def register_user():
     try:
         data = UserReqDto.from_json(request.get_json())
-    except:
-        return jsonify({"success": False, "message": "Completa todos los campos"}), 400
+        logger.info(f"======== profile POST ========\n{data=}\n")
+    except Exception as e:
+        logger.error(f"======== Error al obtener datos del request ========\n{e}\n")
+        return ApiRes.error(
+            "Completa todos los campos necesarios (id, username)"
+        ).flask_response()
 
-    if exists_user(data.id, data.username):
-        return jsonify({"success": False, "message": "El usuario ya existe"}), 409
+    res = UserRepository.exists_by_username_or_id(data.id, data.username)
 
-    print(f"======== Creando usuario {data} ========")
-    user = create_user(data.id, data.username)
+    if res.error:
+        return res.flask_response()
+    elif res.data:
+        return ApiRes.conflict("El usuario ya existe").flask_response()
 
-    if not user:
-        return jsonify({"success": False, "message": "Error al crear el usuario"}), 500
+    logger.info(f"======== Creando usuario ========\n{data=}\n")
 
-    print(f"======== Usuario creado {user} ========")
+    user = User(id=data.id, username=data.username)
+    res = UserRepository.save(user)
 
-    return jsonify({"success": True, "message": "Usuario creado"}), 200
+    if not res:
+        return res.flask_response()
+
+    logger.info(f"======== Usuario creado ========\n{user=}\n")
+    return ApiRes.success("Usuario creado", data=user).flask_response()

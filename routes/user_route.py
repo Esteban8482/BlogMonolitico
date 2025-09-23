@@ -5,16 +5,13 @@ from flask import (
     redirect,
     url_for,
     flash,
-    session,
     abort,
 )
-import requests
 
 from helpers import current_user, login_required
-from services.post_service import get_user_posts, get_user_posts_by_id
+from services.post_service import get_user_posts
+from services.user_service import get_user_profile, update_user_profile
 
-from dtos import UserDto
-from config import ServicesConfig
 
 user_api = Blueprint("user", __name__)
 
@@ -27,25 +24,17 @@ user_api = Blueprint("user", __name__)
 @login_required
 def profile(username: str):
     if request.method == "GET":
-        # micro-servicio de usuario
-        user_req = requests.get(
-            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
-            headers={"X-User-ID": str(current_user().id)},
-        )
+        user = get_user_profile(username)
 
-        print(f"======== profile user {user_req} ========")
+        if not user:
+            flash("Error al obtener el perfil", "error")
+            abort(400)
 
-        if user_req.status_code != 200:
-            abort(404)
+        posts = get_user_posts(user.id)
 
-        try:
-            user = UserDto.from_json(user_req.json()["profile_user"])
-        except Exception as e:
-            print(f"======== failed to parse user {e} ========")
-            abort(404)
-
-        print(f"======== profile user {user} ========")
-        posts = get_user_posts_by_id(user.id)
+        if posts is None:
+            flash("Error al obtener las publicaciones", "error")
+            posts = []
 
         return render_template(
             "profile.html",
@@ -54,18 +43,11 @@ def profile(username: str):
             user=current_user(),
         )
     elif request.method == "POST":
-        # micro-servicio de usuario
-        print(f"======== profile POST {request.form} ========")
+        user = update_user_profile(username, request.form.get("bio", ""))
 
-        post_req = requests.post(
-            f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
-            headers={"X-User-ID": str(current_user().id)},
-            json={"bio": request.form.get("bio", "")},
-        )
-
-        if post_req.status_code == 200:
-            flash("Perfil actualizado", "success")
-        else:
+        if not user:
             flash("Error al actualizar el perfil", "error")
+            return redirect(url_for("user.profile", username=username))
 
+        flash("Perfil actualizado", "success")
         return redirect(url_for("user.profile", username=username))

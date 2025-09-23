@@ -19,11 +19,13 @@ from flask import (
     Flask,
     render_template,
     request,
+    flash,
 )
 
-from db_connector import db, Post
+from db_connector import db
 from helpers import current_user
 from config import Config, DB_PATH
+from services.post_service import get_post_limit
 
 
 def create_app(config_override=None):
@@ -49,15 +51,14 @@ def create_app(config_override=None):
 
     @app.route("/")
     def index():
-        q = request.args.get("q", "").strip()
-        query = Post.query.order_by(Post.created_at.desc())
+        query = request.args.get("q", "").strip()
+        posts = get_post_limit(25, query)
 
-        if q:
-            like = f"%{q}%"
-            query = query.filter((Post.title.ilike(like)) | (Post.content.ilike(like)))
+        if posts is None:
+            flash(f"Error al obtener las publicaciones", "danger")
+            posts = []
 
-        posts = query.limit(25).all()
-        return render_template("index.html", posts=posts, q=q, user=current_user())
+        return render_template("index.html", posts=posts, user=current_user())
 
     # =============================
     # COMMAND UTIL / INIT
