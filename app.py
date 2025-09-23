@@ -1,27 +1,13 @@
 """Aplicación monolítica de Blog con Flask.
 
-<<<<<<< HEAD
-Incluye gestión de Usuarios, Publicaciones y Comentarios en una sola base de datos.
-Archivo único `main.py` para mantener el enfoque monolítico solicitado.
-
-Este archivo contiene la configuración de la aplicación.
-    - Configuración de la base de datos
-    - Registro de rutas
-    - Inicialización de la base de datos
-=======
 Migrada para usar Firebase Authentication en lugar de una base de datos local
 para autenticación. Este archivo contiene la configuración de la aplicación.
     - Registro de rutas
     - Inicialización de Firebase Admin (Auth)
->>>>>>> main
     - Error handlers
     - Context processors
 """
 
-<<<<<<< HEAD
-import sys
-=======
->>>>>>> main
 import os
 from datetime import datetime
 
@@ -32,16 +18,10 @@ from flask import (
     flash,
 )
 
-<<<<<<< HEAD
-from db_connector import db
-from helpers import current_user
-from config import Config, DB_PATH
-=======
 import firebase_admin
 from firebase_admin import credentials
 from helpers import current_user
 from config import Config
->>>>>>> main
 from services.post_service import get_post_limit
 
 
@@ -52,9 +32,6 @@ def create_app(config_override=None):
     if config_override:
         app.config.update(config_override)
 
-<<<<<<< HEAD
-    db.init_app(app)
-=======
     # Inicializar Firebase Admin si aún no está inicializado
     try:
         if not firebase_admin._apps:
@@ -69,7 +46,6 @@ def create_app(config_override=None):
     except Exception as e:
         # No detenemos la app si falla; los endpoints de sesión reportarán el error
         app.logger.error(f"Firebase Admin init failed: {e}")
->>>>>>> main
 
     # registrar Blueprints
     from routes import login_api, post_api, comment_api, user_api
@@ -94,18 +70,6 @@ def create_app(config_override=None):
 
         return render_template("index.html", posts=posts, user=current_user())
 
-<<<<<<< HEAD
-    # =============================
-    # COMMAND UTIL / INIT
-    # =============================
-    @app.cli.command("init-db")
-    def init_db_command():  # pragma: no cover - utilidad CLI
-        """Inicializa la base de datos."""
-        db.create_all()
-        print("Base de datos inicializada en", DB_PATH)
-
-=======
->>>>>>> main
     @app.errorhandler(403)
     def forbidden(e):  # pragma: no cover
         return (
@@ -119,9 +83,6 @@ def create_app(config_override=None):
 
     @app.context_processor
     def inject_globals():
-<<<<<<< HEAD
-        return {"current_user": current_user(), "now": datetime.utcnow()}
-=======
         # Config opcional para Firebase Frontend (puede provenir de env)
         fb_cfg = {
             "apiKey": os.environ.get("FIREBASE_API_KEY"),
@@ -146,7 +107,6 @@ def create_app(config_override=None):
             response.headers.pop("Cross-Origin-Opener-Policy", None)
             response.headers.pop("Cross-Origin-Embedder-Policy", None)
         return response
->>>>>>> main
 
     return app
 
@@ -154,21 +114,5 @@ def create_app(config_override=None):
 app = create_app()
 
 
-<<<<<<< HEAD
-def ensure_db():
-    print("Verificando base de datos...")
-
-    if not os.path.exists(DB_PATH):
-        print("Creando base de datos...")
-
-        with app.app_context():
-            db.create_all()
-            print("Base de datos creada en", DB_PATH)
-
-
 if __name__ == "__main__":
-    ensure_db()
-=======
-if __name__ == "__main__":
->>>>>>> main
     app.run(debug=True, port=5000, use_reloader=True)

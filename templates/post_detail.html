@@ -25,6 +25,7 @@
   {% if current_user and current_user.id|string == post.user_id|string %}
   <div class="actions">
     <a href="{{ url_for('post.edit_post', post_id=post.id) }}">Editar</a>
+
     <form
       method="post"
       action="{{ url_for('post.delete_post', post_id=post.id) }}"
@@ -62,9 +63,9 @@
     {% for c in comments%}
     <li>
       <div class="comment-meta">
-        {% if c.author is defined %}
-        <a href="{{ url_for('user.profile', username=c.author.username) }}"
-          >{{ c.author.username }}</a
+        {% if c.username is defined %}
+        <a href="{{ url_for('user.profile', username=c.username) }}"
+          >{{ c.username }}</a
         >
         {% else %}
         <span>Usuario {{ c.user_id }}</span>
@@ -78,11 +79,7 @@
         {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
         <form
           method="post"
-<<<<<<< HEAD
           action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
-=======
-          action="{{ url_for('comment.delete_comment', comment_id=c.id) }}"
->>>>>>> main
           style="display: inline"
           onsubmit="return confirm('¿Eliminar comentario?');"
         >
@@ -90,9 +87,10 @@
         </form>
         {% endif %}
       </div>
+
       <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
     </li>
-    {% endfor %}
+    {% endfor %}  
     {% endif %}
   </ul>
 </section>

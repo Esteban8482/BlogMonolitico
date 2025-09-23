@@ -76,8 +76,6 @@ def register_user():
 
     logger.info(f"======== Usuario creado ========\n{user=}\n")
     return ApiRes.success("Usuario creado", data=user).flask_response()
-<<<<<<< HEAD
-=======
 
 
 @user_api.route("/u/exists", methods=["GET"])
@@ -96,4 +94,3 @@ def exists_by_username_or_id():
     logger.info(f"======== Usuario encontrado ========\n{res=}\n")
 
     return res.flask_response()
->>>>>>> main

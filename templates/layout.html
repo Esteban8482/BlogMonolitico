@@ -55,22 +55,13 @@
       </form>
 
       {% if current_user %}
-<<<<<<< HEAD
-      <a href="{{ url_for('post.create_post') }}">Nueva Publicación</a>
-      <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
-      <a href="{{ url_for('login.logout') }}">Salir</a>
-      {% else %}
-      <a href="{{ url_for('login.login') }}">Entrar</a>
-      <a href="{{ url_for('login.register') }}">Registro</a>
-=======
       <span id="user-links">
-        <a href="{{ url_for('user.profile', username=current_user.username) }}">Nuevo Post</a>
+        <a href="{{ url_for('post.create_post') }}">Nuevo Post</a>
         <a href="{{ url_for('user.profile', username=current_user.username) }}">Perfil</a>
         <a id="logout-link">Salir</a>
       </span>
       {% else %}
       <span id="user-links"><a href="{{ url_for('login.login') }}">Entrar</a></span>
->>>>>>> main
       {% endif %}
     </div>
   </nav>
@@ -91,8 +82,4 @@
 
   <footer class="footer">&copy; {{ now.year }} MiniBlog</footer>
 </body>
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 </html>

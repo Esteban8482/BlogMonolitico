@@ -110,7 +110,7 @@ def is_comment_owner_or_post_owner(comment: CommentDto) -> bool:
     if not post:
         return False
 
-    return post and (str(post.author.id) == str(user.id))
+    return post and (str(post.user_id) == str(user.id))
 
 
 def list_comments(post_id: str) -> list[CommentDto]:
