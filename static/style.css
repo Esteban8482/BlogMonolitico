@@ -12,21 +12,141 @@ body {
 }
 
 .navbar {
+  z-index: 1000;
+  position: sticky;
+  top: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #24292e;
+  background: #fff;
+  color: #222;
   padding: 0.6rem 1rem;
+  border-bottom: 1px solid #d0d7de;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 4rem;
 }
 
 .navbar a {
-  color: #fff;
   text-decoration: none;
-  margin-left: 1rem;
 }
 
 .navbar .brand {
   font-weight: bold;
+}
+
+.nav-left {
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: x-large;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#input-search {
+  max-width: 100%;
+  height: 2.25rem;
+  background-color: #f8fafc;
+  transition-property: background-color;
+  transition-duration: 150ms;
+  border-color: #d0d7de;
+  border-radius: 4px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+#input-search:hover {
+  background-color: #f2f2f2;
+}
+
+#input-search:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+#login-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f1f1f1;
+  padding: 0.5rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #222;
+}
+
+#user-links {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  font-size: 1rem;
+}
+
+#user-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #1d4ed8;
+  background-color: #f1f5f9;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#user-links a:hover {
+  background-color: #e0e7ff;
+}
+
+#logout-link {
+  cursor: pointer;
+  color: #dc2626 !important;
+}
+
+#logout-link:hover {
+  background-color: #b91c1c !important;
+  color: #fff !important;
+}
+
+#google-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #ffffff;
+  color: #3c4043; /* color típico de botones Google */
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#google-signin:hover {
+  background-color: #f1f3f4;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#google-signin:active {
+  background-color: #e8eaed;
+}
+
+#google-signin:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.4); /* azul Google */
+}
+
+a {
+  text-decoration: none;
+  color: #1d4ed8;
 }
 
 .container {
@@ -60,6 +180,11 @@ body {
   margin-top: 0;
 }
 
+.post-detail h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
 .meta {
   font-size: 0.8rem;
   color: #666;
@@ -83,6 +208,7 @@ body {
   border: 1px solid #bbb;
   border-radius: 4px;
   font: inherit;
+  resize: vertical;
 }
 
 .form button {
@@ -100,9 +226,47 @@ body {
   background: #1d4ed8;
 }
 
+.btn-red {
+  background: #dc2626 !important;
+  border: none;
+  color: #fff !important;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 .actions a,
-.actions button {
-  margin-right: 0.5rem;
+.actions .danger {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.2s ease;
+}
+
+/* Fondo azul para "Editar" */
+.actions a {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* Fondo rojo para "Eliminar" */
+.actions .danger {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
 button.danger,
@@ -126,6 +290,9 @@ button.danger:hover {
 }
 
 .comment-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 0.75rem;
   color: #555;
   margin-bottom: 0.25rem;
@@ -173,14 +340,6 @@ button.danger:hover {
   border: 1px solid #555;
   border-radius: 4px;
   background: #fff;
-}
-
-a {
-  color: #2563eb;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 
 .profile-box {
