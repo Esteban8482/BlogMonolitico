@@ -34,8 +34,6 @@ import {
         return false
       }
 
-      if (!res.ok) return false
-
       const json = await res.json()
       return !!(json && json.ok)
     } catch {

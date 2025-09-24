@@ -45,7 +45,7 @@ def auth_session():
 
     try:
         # desfasar la respuesta para que firebase no marque el token como usado muy reciente
-        decoded = admin_auth.verify_id_token(id_token, clock_skew_seconds=5)
+        decoded = admin_auth.verify_id_token(id_token, clock_skew_seconds=10)
 
         # Preferimos displayName; si no, parte local de email como fallback
         display_name = decoded.get("name") or decoded.get("displayName")
@@ -71,7 +71,7 @@ def auth_session():
     elif not (display_name and decoded.get("uid")):
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
-        return jsonify({"ok": False, "redirect": url_for("login.login")})
+        return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
 
     # Crear perfil de usuario en microservicio si no existe (best-effort)
     user = create_user_profile(str(decoded["uid"]), str(display_name))
@@ -79,7 +79,7 @@ def auth_session():
     if not user:
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
-        return jsonify({"ok": False, "redirect": url_for("login.login")})
+        return jsonify({"ok": False, "redirect": url_for("login.login")}), 500
 
     return jsonify({"ok": True, "redirect": url_for("index")})
 
