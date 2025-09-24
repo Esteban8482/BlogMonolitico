@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
 
-*,
-*::before,
-*::after {
+* {
   font-family: 'Quicksand', system-ui, Arial, sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
@@ -203,6 +201,8 @@ a {
   padding: 1rem;
   font-size: 0.9rem;
   color: #555;
+  background-color: #f6f8fa;
+  border-top: 1px solid #d0d7de;
 }
 
 .post-list {
