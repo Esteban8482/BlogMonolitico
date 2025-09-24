@@ -1,11 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+
 *,
 *::before,
 *::after {
+  font-family: 'Quicksand', system-ui, Arial, sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
   box-sizing: border-box;
 }
 
 body {
-  font-family: system-ui, Arial, sans-serif;
   margin: 0;
   background: #f7f7f9;
   color: #222;
@@ -121,7 +125,7 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: #ffffff;
-  color: #3c4043; /* color típico de botones Google */
+  color: #3c4043;
   border: 1px solid #dadce0;
   border-radius: 6px;
   font-size: 1rem;
@@ -156,6 +160,42 @@ a {
   padding: 1.5rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   border-radius: 6px;
+}
+
+.index-header {
+  min-height: 70vh;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  place-content: center;
+  place-items: center;
+  background-color: #e0e7ff;
+  color: black;
+  padding: 2rem;
+  margin-bottom: 2rem;
+
+  & div,
+  img {
+    max-width: 80% !important;
+  }
+
+  & img {
+    scale: 1.5;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.login-header {
+  min-height: 85vh;
+}
+
+.google-signin-button {
+  padding: 0.75rem 1rem !important;
+}
+
+.google-logo {
+  width: 24px;
+  height: 24px;
 }
 
 .footer {
@@ -303,9 +343,14 @@ button.danger:hover {
 }
 
 .flashes {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1100;
   list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
+  padding: 1rem;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .flash {
@@ -349,6 +394,14 @@ button.danger:hover {
   margin-bottom: 1rem;
 }
 
+@media (max-width: 1200px) {
+  .index-header {
+    & img {
+      scale: 1;
+    }
+  }
+}
+
 @media (max-width: 700px) {
   .container {
     margin: 0;
@@ -358,5 +411,20 @@ button.danger:hover {
 
   .navbar {
     flex-wrap: wrap;
+  }
+
+  .index-header {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 0.5rem;
+
+    & img {
+      scale: 1;
+    }
+  }
+}
+
+@media (max-width: 500px) {
+  #nav-brand {
+    display: none;
   }
 }

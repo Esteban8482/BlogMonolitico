@@ -40,6 +40,16 @@
       window.__FIREBASE_APP_READY__ = false;
       window.__FIREBASE_INIT_ERROR__ = String(e && e.message || e);
     }
+
+    // Ocultar flash
+    setTimeout(() => {
+      const flashes = document.querySelector('.flashes');
+      if (flashes) {
+        flashes.style.transition = 'opacity 0.5s ease-out';
+        flashes.style.opacity = '0';
+        setTimeout(() => flashes.remove(), 500); // Elimina el elemento del DOM
+      }
+    }, 4000);
   </script>
 
   <script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
@@ -49,7 +59,7 @@
   <nav class="navbar">
     <div class="nav-left">
       <img src="{{ url_for('static', filename='book.svg') }}" alt="MiniBlog" />
-      <a href="{{ url_for('index') }}" class="brand">MiniBlog</a>
+      <a href="{{ url_for('index') }}" id="nav-brand" class="brand">MiniBlog</a>
     </div>
 
     <div class="nav-right">
@@ -75,7 +85,7 @@
     </div>
   </nav>
 
-  <main class="container">
+  <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <ul class="flashes">

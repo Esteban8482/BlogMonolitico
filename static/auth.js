@@ -29,6 +29,11 @@ import {
         body: JSON.stringify({ idToken }),
       })
 
+      if (!res.ok) {
+        window.location.href = '/login'
+        return false
+      }
+
       if (!res.ok) return false
 
       const json = await res.json()

@@ -1,21 +1,34 @@
 {% extends 'layout.html' %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<h1>Iniciar Sesión</h1>
 
-<p id="login-status" class="muted">
-</p>
+<header class="index-header login-header">
+    <div>
+        <h1>Iniciar Sesión</h1>
 
-<button id="google-signin" type="button">
-    <img src="{{ url_for('static', filename='google.png') }}" alt="">
-    <span>
-        Continuar con Google
-    </span>
-</button>
+        <p>
+            MiniBlog es el lugar donde tus ideas cobran vida. Inicia sesión y comienza a compartir tus aventuras, pensamientos y momentos que merecen ser contados. Desde experiencias cotidianas hasta sueños extraordinarios, aquí puedes transformar lo que llevas dentro en historias que inspiran. ¿Tienes algo que decir? Este es tu espacio para expresarte libremente, conectar con personas afines y descubrir nuevas perspectivas que te enriquecerán.
+        </p>
 
-<p>
-    ¿No tienes cuenta?
-    <br>
-    Crea una con Google o Email en el popup.
-</p>
+        <p>
+            Cada historia cuenta, y la tuya puede ser la próxima en inspirar a otros. Comparte lo que te apasiona, comenta en publicaciones que te interesen y haz parte de una comunidad vibrante que valora la autenticidad. No solo leas historias: escribe la tuya, hazla visible, hazla memorable. Tu próxima gran historia comienza con un clic. Únete a MiniBlog y hazla realidad.
+        </p>
+
+        <button id="google-signin" type="button" class="google-signin-button">
+            <img src="{{ url_for('static', filename='google.png') }}" class="google-logo" alt="">
+            <span>
+                Continuar con Google
+            </span>
+        </button>
+
+        <p>
+            ¿No tienes cuenta?
+            <br>
+            Crea una con Google o Email en el popup.
+        </p>
+    </div>
+
+    <img src="{{ url_for('static', filename='login.png') }}" alt="">
+</header>
+
 {% endblock %}

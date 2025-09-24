@@ -1,8 +1,18 @@
 {% extends 'layout.html' %}
 {% block title %}Registro{% endblock %}
 {% block content %}
+
 <h1>Crear cuenta</h1>
-<p>El registro de cuentas ahora se realiza con Firebase Authentication. Usa el botón de Google en la página de <a href="{{ url_for('login.login') }}">inicio de sesión</a>.</p>
-<p>Una vez completes el inicio con Google, se creará tu perfil automáticamente.</p>
+
+<p>
+    El registro de cuentas ahora se realiza con Firebase Authentication. Usa el botón de Google en la página de 
+    <a href="{{ url_for('login.login') }}">inicio de sesión</a>.
+</p>
+
+<p>
+    Una vez completes el inicio con Google, se creará tu perfil automáticamente.
+</p>
+
 <a href="{{ url_for('login.login') }}" class="button">Ir a Iniciar Sesión</a>
+
 {% endblock %}

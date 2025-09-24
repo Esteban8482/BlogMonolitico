@@ -11,7 +11,8 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='markdown.css') }}" />
 
-<article class="post-detail">
+<div class="container">
+  <article class="post-detail">
   <h1>{{ post.title }}</h1>
 
   <h2 class="meta">
@@ -36,64 +37,66 @@
   {% endif %}
 
   <div class="body markdown-body">{{ markdown_content | safe }}</div>
-</article>
+  </article>
 
-<section class="comments">
-  <h2>
-    Comentarios (
-    {% if comments is defined %}
-    {{ comments|length }}
+  <section class="comments">
+    <h2>
+      Comentarios (
+      {% if comments is defined %}
+      {{ comments|length }}
+      {% else %}
+      {{post.comments|length }}
+      {% endif %} )
+    </h2>
+
+    {% if current_user %}
+    <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
+      <textarea name="content" rows="3"  placeholder="Escribe un comentario..." required></textarea>
+
+      <button type="submit">Comentar</button>
+    </form>
     {% else %}
-    {{post.comments|length }}
-    {% endif %} )
-  </h2>
+      <a href="{{ url_for('login.login') }}">
+        Inicia sesión para comentar.
+      </a>
+    {% endif %}
 
-  {% if current_user %}
-  <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
-    <textarea name="content" rows="3"  placeholder="Escribe un comentario..." required></textarea>
+    <ul class="comment-list">
+      {% if comments is defined %}
+      {# --- Comentarios desde microservicio --- #}
+      {% for c in comments%}
+      <li>
+        <div class="comment-meta">
+          <div>
+            {% if c.username is defined %}
+            <a href="{{ url_for('user.profile', username=c.username) }}">
+              {{ c.username }}
+            </a>
+            {% else %}
+            <h5>Usuario {{ c.user_id }}</span>
+            {% endif %}
 
-    <button type="submit">Comentar</button>
-  </form>
-  {% else %}
-    <a href="{{ url_for('login.login') }}">
-      Inicia sesión para comentar.
-    </a>
-  {% endif %}
+            {{ c.created_at|safe }}
+          </div>
 
-  <ul class="comment-list">
-    {% if comments is defined %}
-    {# --- Comentarios desde microservicio --- #}
-    {% for c in comments%}
-    <li>
-      <div class="comment-meta">
-        <div>
-          {% if c.username is defined %}
-          <a href="{{ url_for('user.profile', username=c.username) }}">
-            {{ c.username }}
-          </a>
-          {% else %}
-          <h5>Usuario {{ c.user_id }}</span>
+          {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
+          <form
+            method="post"
+            action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
+            style="display: inline"
+            onsubmit="return confirm('¿Eliminar comentario?');"
+          >
+            <button type="submit" class="btn-red">Eliminar</button>
+          </form>
           {% endif %}
-
-          {{ c.created_at|safe }}
         </div>
 
-        {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
-        <form
-          method="post"
-          action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
-          style="display: inline"
-          onsubmit="return confirm('¿Eliminar comentario?');"
-        >
-          <button type="submit" class="btn-red">Eliminar</button>
-        </form>
-        {% endif %}
-      </div>
+        <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
+      </li>
+      {% endfor %}
+      {% endif %}
+    </ul>
+  </section>
+</div>
 
-      <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
-    </li>
-    {% endfor %}
-    {% endif %}
-  </ul>
-</section>
 {% endblock %}
