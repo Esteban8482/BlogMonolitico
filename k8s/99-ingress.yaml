@@ -4,6 +4,7 @@ metadata:
   name: blog-ingress
   namespace: blog
   annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
@@ -11,27 +12,27 @@ spec:
     - host: blog.local
       http:
         paths:
-
+          # /api/users/...  ->  /u/...
           - path: /api/users(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: user
                 port:
                   number: 8080
 
-
+          # /api/posts/...  ->  /post/...
           - path: /api/posts(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: post
                 port:
                   number: 8080
 
-
+          # /api/comments/...  ->  /v1/...
           - path: /api/comments(/|$)(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: comments
