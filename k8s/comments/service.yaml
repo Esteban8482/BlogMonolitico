@@ -1,0 +1,13 @@
+# k8s/comments/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: comments
+  namespace: blog
+spec:
+  selector: { app: comments }
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8091
+  type: ClusterIP

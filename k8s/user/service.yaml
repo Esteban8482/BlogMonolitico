@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  namespace: blog
+spec:
+  selector: { app: user }
+  ports:
+    - name: http
+      port: 8080          # lo que ve el Ingress
+      targetPort: 5002    # <— lo que escucha el contenedor
+  type: ClusterIP

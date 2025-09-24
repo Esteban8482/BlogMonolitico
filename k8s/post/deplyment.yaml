@@ -16,7 +16,7 @@ spec:
           imagePullPolicy: IfNotPresent
           ports: [{ containerPort: 8080 }]
           env:
-            - name: FIREBASE_ADMIN_CREDENTIALS
+            - name: FIREBASE_ADMIN_CREDENTIALS_POST
               value: /var/secrets/firebase/serviceAccountKey.json
           envFrom:
             - configMapRef: { name: blog-config }
@@ -34,17 +34,3 @@ spec:
         - name: firebase-key
           secret:
             secretName: firebase-post
----
-# k8s/post/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: post
-  namespace: blog
-spec:
-  selector: { app: post }
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-  type: ClusterIP

@@ -14,7 +14,7 @@ spec:
         - name: user
           image: blog/user:dev
           imagePullPolicy: IfNotPresent
-          ports: [{ containerPort: 8080 }]
+          ports: [{ containerPort: 5002 }]
           env:
             - name: FIREBASE_ADMIN_CREDENTIALS
               value: /var/secrets/firebase/serviceAccountKey.json
@@ -25,26 +25,13 @@ spec:
               mountPath: /var/secrets/firebase
               readOnly: true
           readinessProbe:
-            httpGet: { path: /health, port: 8080 }   
+            httpGet: { path: /health, port: 5002 }   
             initialDelaySeconds: 5
           livenessProbe:
-            httpGet: { path: /live, port: 8080 }   
+            httpGet: { path: /live, port: 5002 }   
             initialDelaySeconds: 15
       volumes:
         - name: firebase-key
           secret:
             secretName: firebase-user
 ---
-# k8s/user/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: user
-  namespace: blog
-spec:
-  selector: { app: user }
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-  type: ClusterIP
