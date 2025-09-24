@@ -4,21 +4,23 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='markdown.css') }}" />
 
-<h1>Nueva Publicación</h1>
+<div class="container">
+  <h1>Nueva Publicación</h1>
 
-<form method="post" class="form">
-  <label
-    >Título
-    <input type="text" name="title" required />
-  </label>
+  <form method="post" class="form">
+    <label
+      >Título
+      <input type="text" name="title" required />
+    </label>
 
-  <label
-    >Contenido
-    <textarea id="markdown-editor" name="content"></textarea>
-  </label>
+    <label
+      >Contenido
+      <textarea id="markdown-editor" name="content"></textarea>
+    </label>
 
-  <button type="submit">Publicar</button>
-</form>
+    <button type="submit">Publicar</button>
+  </form>
+</div>
 
 <script>
   const easyMDE = new EasyMDE({

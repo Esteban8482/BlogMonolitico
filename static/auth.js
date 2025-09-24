@@ -29,7 +29,10 @@ import {
         body: JSON.stringify({ idToken }),
       })
 
-      if (!res.ok) return false
+      if (!res.ok) {
+        window.location.href = '/login'
+        return false
+      }
 
       const json = await res.json()
       return !!(json && json.ok)
@@ -189,6 +192,7 @@ import {
           }
         } else {
           sessionStorage.removeItem('firebaseIdToken')
+
           await fetch('/auth/logout', { method: 'POST' }).catch(() => {})
           window.__SERVER_SESSION_OK__ = false
           redirectUnauthedToLogin(user)

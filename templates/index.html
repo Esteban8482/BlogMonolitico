@@ -1,19 +1,48 @@
 {% extends 'layout.html' %} {% block title %}Inicio - Blog{% endblock %} {% block content %}
-<h1>Publicaciones Recientes</h1>
-{% if posts %}
-<ul class="post-list">
-  {% for p in posts %}
-  <li>
-    <h2><a href="{{ url_for('post.post_detail', post_id=p.id) }}">{{ p.title }}</a></h2>
-    <div class="meta">
-      Por
-      <a href="{{ url_for('user.profile', username=p.username) }}">{{ p.username }}</a>
-      | {{ p.created_at.strftime('%Y-%m-%d %H:%M') }}
-    </div>
-    <p>{{ p.content[:200] }}{% if p.content|length > 200 %}...{% endif %}</p>
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>No hay publicaciones aún.</p>
-{% endif %} {% endblock %}
+
+{% if not user %}
+<header class="index-header">
+  <div>
+    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Bienvenido a MiniBlog</h1>
+
+    <p style="font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
+      MiniBlog es una plataforma donde puedes compartir tus ideas, historias y pasiones con una comunidad vibrante. Únete para crear tu propio blog, comentar y descubrir contenido inspirador.
+    </p>
+
+    <a href="{{ url_for('login.login') }}" style="display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.5rem; background-color: white; color: #1d4ed8; font-weight: bold; border-radius: 4px; text-decoration: none;">
+      Iniciar sesión
+    </a>
+  </div>
+
+  <img src="{{ url_for('static', filename='index.png') }}" alt="">
+</header>
+{% endif %}
+
+<div class="container">
+  {% if user %}
+  <header style="background-color: #f9f9f9; color: #1d4ed8; padding: 1rem 2rem; border-left: 6px solid #1d4ed8; margin-bottom: 2rem;">
+    <h2>Hola {{ user.username }} 👋</h2>
+    <p>Explora las últimas publicaciones o crea tu propio blog para compartir tus ideas.</p>
+  </header>
+  {% endif %}
+
+
+  <h1>Publicaciones Recientes</h1>
+  {% if posts %}
+  <ul class="post-list">
+    {% for p in posts %}
+    <li>
+      <h2><a href="{{ url_for('post.post_detail', post_id=p.id) }}">{{ p.title }}</a></h2>
+      <div class="meta">
+        Por
+        <a href="{{ url_for('user.profile', username=p.username) }}">{{ p.username }}</a>
+        | {{ p.created_at.strftime('%Y-%m-%d %H:%M') }}
+      </div>
+      <p>{{ p.content[:200] }}{% if p.content|length > 200 %}...{% endif %}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No hay publicaciones aún.</p>
+  {% endif %} {% endblock %}
+</div>

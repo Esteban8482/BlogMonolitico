@@ -11,16 +11,15 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='markdown.css') }}" />
 
-<article class="post-detail">
+<div class="container">
+  <article class="post-detail">
   <h1>{{ post.title }}</h1>
 
-  <div class="meta">
+  <h2 class="meta">
     Por
     <a href="{{ url_for('user.profile', username=post.user_id) }}">{{ post.username }}</a> | {{
     post.created_at.strftime('%Y-%m-%d %H:%M') }}
-  </div>
-
-  <div class="body markdown-body">{{ markdown_content | safe }}</div>
+  </h2>
 
   {% if current_user and current_user.id|string == post.user_id|string %}
   <div class="actions">
@@ -36,62 +35,68 @@
     </form>
   </div>
   {% endif %}
-</article>
 
-<section class="comments">
-  <h2>
-    Comentarios (
-    {% if comments is defined %}
-    {{ comments|length }}
+  <div class="markdown-body">{{ markdown_content | safe }}</div>
+  </article>
+
+  <section class="comments">
+    <h2>
+      Comentarios (
+      {% if comments is defined %}
+      {{ comments|length }}
+      {% else %}
+      {{post.comments|length }}
+      {% endif %} )
+    </h2>
+
+    {% if current_user %}
+    <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
+      <textarea name="content" rows="3"  placeholder="Escribe un comentario..." required></textarea>
+
+      <button type="submit">Comentar</button>
+    </form>
     {% else %}
-    {{post.comments|length }}
-    {% endif %} )
-  </h2>
-
-  {% if current_user %}
-  <form method="post" action="{{ url_for('comment.add_comment', post_id=post.id) }}" class="form">
-    <textarea name="content" rows="3" placeholder="Escribe un comentario..." required></textarea>
-    <button type="submit">Comentar</button>
-  </form>
-  {% else %}
-  <p><a href="{{ url_for('login.login') }}">Inicia sesión</a> para comentar.</p>
-  {% endif %}
-
-  <ul class="comment-list">
-    {% if comments is defined %}
-    {# --- Comentarios desde microservicio --- #}
-    {% for c in comments%}
-    <li>
-      <div class="comment-meta">
-        {% if c.username is defined %}
-        <a href="{{ url_for('user.profile', username=c.username) }}"
-          >{{ c.username }}</a
-        >
-        {% else %}
-        <span>Usuario {{ c.user_id }}</span>
-        {% endif %}
-
-        {% if c.created_at is string %}
-        {{ c.created_at[:16]|replace('T',' ') }}
-        {%else %}
-        {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
-        {% endif %}
-        {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
-        <form
-          method="post"
-          action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
-          style="display: inline"
-          onsubmit="return confirm('¿Eliminar comentario?');"
-        >
-          <button type="submit" class="link danger">Eliminar</button>
-        </form>
-        {% endif %}
-      </div>
-
-      <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
-    </li>
-    {% endfor %}  
+      <a href="{{ url_for('login.login') }}">
+        Inicia sesión para comentar.
+      </a>
     {% endif %}
-  </ul>
-</section>
+
+    <ul class="comment-list">
+      {% if comments is defined %}
+      {# --- Comentarios desde microservicio --- #}
+      {% for c in comments%}
+      <li>
+        <div class="comment-meta">
+          <div>
+            {% if c.username is defined %}
+            <a href="{{ url_for('user.profile', username=c.username) }}">
+              {{ c.username }}
+            </a>
+            {% else %}
+            <h5>Usuario {{ c.user_id }}</span>
+            {% endif %}
+
+            {{ c.created_at|safe }}
+          </div>
+
+          {% if current_user and ((c.user_id is defined and current_user.id|string == c.user_id|string) or current_user.id|string ==post.user_id|string) %}
+          <form
+            method="post"
+            action="{{ url_for('comment.delete_comment', comment_id=c.id|string) }}"
+            style="display: inline"
+            onsubmit="return confirm('¿Eliminar comentario?');"
+          >
+            <button type="submit" class="btn-red">Eliminar</button>
+          </form>
+          {% endif %}
+        </div>
+
+        <div class="comment-body">{{ c.content|replace('\n', '<br />')|safe }}</div>
+      </li>
+      {% endfor %}
+      {% endif %}
+    </ul>
+  </section>
+</div>
+
 {% endblock %}

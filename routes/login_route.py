@@ -23,7 +23,7 @@ login_api = Blueprint("login", __name__)
 def register():
     # Se recomienda registrar la cuenta con Firebase en el frontend.
     # Luego, al iniciar sesión, crearemos el perfil en el microservicio de usuarios.
-    return render_template("register.html")
+    return render_template("login.html")
 
 
 @login_api.route("/login", methods=["GET"])  # Login via Firebase JS (Google/Email)
@@ -32,14 +32,6 @@ def login():
         return redirect(url_for("index"))
 
     return render_template("login.html")
-
-
-# @login_api.route("/logout")
-# def logout():
-#     # Mantener compatibilidad de enlace, pero ahora la sesión real se limpia en /auth/logout (POST)
-#     session.clear()
-#     flash("Sesión cerrada", "info")
-#     return redirect(url_for("index"))
 
 
 # Endpoints para sincronizar sesión con Firebase Auth (usados por static/auth.js)
@@ -53,7 +45,7 @@ def auth_session():
 
     try:
         # desfasar la respuesta para que firebase no marque el token como usado muy reciente
-        decoded = admin_auth.verify_id_token(id_token, clock_skew_seconds=5)
+        decoded = admin_auth.verify_id_token(id_token, clock_skew_seconds=10)
 
         # Preferimos displayName; si no, parte local de email como fallback
         display_name = decoded.get("name") or decoded.get("displayName")
@@ -79,7 +71,7 @@ def auth_session():
     elif not (display_name and decoded.get("uid")):
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
-        return jsonify({"ok": False, "redirect": url_for("login.login")})
+        return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
 
     # Crear perfil de usuario en microservicio si no existe (best-effort)
     user = create_user_profile(str(decoded["uid"]), str(display_name))
@@ -87,7 +79,7 @@ def auth_session():
     if not user:
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
-        return jsonify({"ok": False, "redirect": url_for("login.login")})
+        return jsonify({"ok": False, "redirect": url_for("login.login")}), 500
 
     return jsonify({"ok": True, "redirect": url_for("index")})
 
