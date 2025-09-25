@@ -61,13 +61,18 @@ def create_app(config_override=None):
 
     @app.route("/")
     def index():
+        from log import logger
+
+        logger.info("======== index =========")
         query = request.args.get("q", "").strip()
         posts = get_post_limit(25, query)
 
         if posts is None:
+            logger.error("======== Error al obtener las publicaciones ========")
             flash(f"Error al obtener las publicaciones", "danger")
             posts = []
 
+        logger.info(f"======== Mostrando {len(posts)} publicaciones ========")
         return render_template("index.html", posts=posts, user=current_user())
 
     @app.errorhandler(403)
@@ -107,11 +112,11 @@ def create_app(config_override=None):
             response.headers.pop("Cross-Origin-Opener-Policy", None)
             response.headers.pop("Cross-Origin-Embedder-Policy", None)
         return response
-    
+
     @app.get("/health")
     def heatlh():
         return {"status": "ok"}
-    
+
     @app.get("/live")
     def live():
         return {"status": "ok"}

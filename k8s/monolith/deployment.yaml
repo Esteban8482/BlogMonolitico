@@ -1,0 +1,53 @@
+# k8s/monolith/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith
+  namespace: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monolith
+  template:
+    metadata:
+      labels:
+        app: monolith
+    spec:
+      # Configuración de contenedores
+      # Imagen, puertos expuestos, variables de entorno
+      containers:
+        - name: monolith
+          image: blog/monolith:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+
+          # URLs de microservicios, LOG_LEVEL, etc.
+          envFrom:
+            - configMapRef:
+                name: blog-config
+          env:
+            - name: FIREBASE_ADMIN_CREDENTIALS
+              value: /var/secrets/firebase/serviceAccountKey.json
+          volumeMounts:
+            - name: firebase-key
+              mountPath: /var/secrets/firebase
+              readOnly: true
+
+          # Pruebas para revisar el estado del servicio
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 5000
+            initialDelaySeconds: 15
+
+      volumes:
+        - name: firebase-key
+          secret:
+            secretName: firebase-monolith

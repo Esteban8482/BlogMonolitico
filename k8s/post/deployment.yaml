@@ -1,33 +1,36 @@
-# k8s/comments/deployment.yaml
+# k8s/post/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: comments
-  namespace: blog # Namespace para agrupar todos los recursos del proyecto
+  name: post
+  namespace: blog
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: comments # Etiqueta que identifica a los pods de este Deployment
+      app: post # Etiquetas de los pods que gestionará este Deployment
   template:
     metadata:
       labels:
-        app: comments
+        app: post
     spec:
       # Configuración de contenedores
       # Imagen, puertos expuestos, variables de entorno
       containers:
-        - name: comments
-          image: blog/comments:dev
+        - name: post
+          image: blog/post:dev
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8091
+            - containerPort: 5003
           env:
-            - name: GOOGLE_APPLICATION_CREDENTIALS
+            - name: FIREBASE_ADMIN_CREDENTIALS_POSTS
               value: /var/secrets/firebase/serviceAccountKey.json
+
+          # Variable de entorno que apunta a la ruta del secreto montado
+          # Importar variables adicionales desde un ConfigMap
           envFrom:
             - configMapRef:
-                name: blog-config # Importar variables adicionales desde un ConfigMap
+                name: blog-config
 
           # Montar el secreto con credenciales de Firebase en modo solo lectura
           volumeMounts:
@@ -39,16 +42,16 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 8091
+              port: 5003
             initialDelaySeconds: 5
 
           # Verifica periódicamente que el contenedor siga vivo
           livenessProbe:
             httpGet:
               path: /live
-              port: 8091
+              port: 5003
             initialDelaySeconds: 15
       volumes:
         - name: firebase-key
           secret:
-            secretName: firebase-comments # Secreto de Kubernetes que contiene la clave de Firebase
+            secretName: firebase-post # Secreto de Kubernetes que contiene la clave de Firebase

@@ -20,6 +20,7 @@ import requests
 from config import ServicesConfig
 from helpers import current_user
 from dtos import PostDto
+from log import logger
 
 _TIMEOUT = 5
 
@@ -171,8 +172,11 @@ def get_post_limit(limit: int, title: str) -> Optional[List[PostDto]]:
         Optional[List[PostDto]]: La lista de posts del usuario, o None si no se pudo obtener los posts.
     """
     try:
+        url = f"{ServicesConfig.POST_SERVICE_URL}/post/limit/{limit}?title={title}"
+        logger.info(f"======== Obteniendo posts ========\n{url=}\n")
+
         post_req = requests.get(
-            f"{ServicesConfig.POST_SERVICE_URL}/post/limit/{limit}?title={title}",
+            url,
             timeout=_TIMEOUT,
         )
 
@@ -182,5 +186,6 @@ def get_post_limit(limit: int, title: str) -> Optional[List[PostDto]]:
             return []
 
         return [PostDto.from_json(post) for post in post_req.json()["data"]]
-    except:
+    except Exception as e:
+        logger.error(f"======== Error al obtener los posts ========\n{e}\n")
         return None
