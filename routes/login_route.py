@@ -11,6 +11,7 @@ from flask import (
 from firebase_admin import auth as admin_auth
 from services.user_service import create_user_profile, exist_user
 from helpers import current_user
+from log import logger
 
 login_api = Blueprint("login", __name__)
 
@@ -29,6 +30,7 @@ def register():
 @login_api.route("/login", methods=["GET"])  # Login via Firebase JS (Google/Email)
 def login():
     if current_user():
+        logger.info("======== Ya iniciaste sesión ========")
         return redirect(url_for("index"))
 
     return render_template("login.html")
@@ -40,6 +42,8 @@ def auth_session():
     data = request.get_json(silent=True) or {}
     id_token = data.get("idToken")
 
+    logger.info(f"======== auth_session ========\n{id_token=}\n")
+
     if not id_token:
         return jsonify({"ok": False, "error": "missing idToken"}), 400
 
@@ -50,7 +54,7 @@ def auth_session():
         # Preferimos displayName; si no, parte local de email como fallback
         display_name = decoded.get("name") or decoded.get("displayName")
     except Exception as e:
-        print("==================== ERROR", e)
+        logger.error(f"======== Error al iniciar sesión ========\n{e}\n")
         flash("Error al iniciar sesión", "danger")
         return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
 
@@ -65,10 +69,16 @@ def auth_session():
     session["email"] = decoded.get("email")
     session["username"] = display_name
 
+    logger.info(f"======== Iniciando sesión ========\n{decoded=}\n{display_name=}\n")
+
     # microservicio de usuarios, si existe evitar agregarlo y redirigir
     if exist_user(decoded["uid"], display_name):
+        logger.info(f"======== Perfil de usuario existente ========\n{decoded=}\n")
         return jsonify({"ok": True, "redirect": url_for("index")})
     elif not (display_name and decoded.get("uid")):
+        logger.error(
+            f"======== Error al crear perfil de usuario ========\n{decoded.get('uid')=}\n"
+        )
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
         return jsonify({"ok": False, "redirect": url_for("login.login")}), 400
@@ -77,10 +87,14 @@ def auth_session():
     user = create_user_profile(str(decoded["uid"]), str(display_name))
 
     if not user:
+        logger.error(
+            f"======== Error al crear perfil de usuario ========\nService error\n"
+        )
         session.clear()
         flash("Error al crear perfil de usuario o iniciar sesión", "danger")
         return jsonify({"ok": False, "redirect": url_for("login.login")}), 500
 
+    logger.info(f"======== Perfil de usuario creado ========\n{user=}\n")
     return jsonify({"ok": True, "redirect": url_for("index")})
 
 

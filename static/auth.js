@@ -30,6 +30,9 @@ import {
       })
 
       if (!res.ok) {
+        console.error(res)
+        sessionStorage.clear()
+        localStorage.clear()
         window.location.href = '/login'
         return false
       }

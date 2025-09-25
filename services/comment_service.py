@@ -4,6 +4,7 @@ import requests
 from flask import abort
 from helpers import current_user
 from services.post_service import get_post
+from log import logger
 
 COMMENTS_BASE = os.getenv("COMMENTS_BASE", "http://localhost:8091/v1")
 
@@ -42,7 +43,12 @@ def create_comment(post_id: str, content: str, username: str) -> CommentDto:
         if r.status_code == 201:
             d = r.json()
             return CommentDto(
-                d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"]
+                d["id"],
+                d["post_id"],
+                d["user_id"],
+                d["content"],
+                d["created_at"],
+                d["username"],
             )
         elif r.status_code == 401:
             abort(401)
@@ -59,7 +65,12 @@ def get_comment_or_404(comment_id: int) -> CommentDto:
     if r.status_code == 200:
         d = r.json()
         return CommentDto(
-            d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"]
+            d["id"],
+            d["post_id"],
+            d["user_id"],
+            d["content"],
+            d["created_at"],
+            d["username"],
         )
     elif r.status_code == 404:
         abort(404)
@@ -114,14 +125,29 @@ def is_comment_owner_or_post_owner(comment: CommentDto) -> bool:
 
 
 def list_comments(post_id: str) -> list[CommentDto]:
+    url = f"{COMMENTS_BASE}/comments"
+
+    logger.info(f"======== list_comments ========\n{url=}\n{post_id=}\n")
+
     r = requests.get(
         f"{COMMENTS_BASE}/comments", params={"post_id": post_id}, timeout=5
     )
+
+    logger.info(f"======== list_comments ========\n{r.status_code=}\n")
+
     if r.status_code != 200:
         abort(502, f"comments service error: {r.status_code}")
+
     data = r.json()
     items = data.get("items", [])
     return [
-        CommentDto(d["id"], d["post_id"], d["user_id"], d["content"], d["created_at"], d["username"])
+        CommentDto(
+            d["id"],
+            d["post_id"],
+            d["user_id"],
+            d["content"],
+            d["created_at"],
+            d["username"],
+        )
         for d in items
     ]

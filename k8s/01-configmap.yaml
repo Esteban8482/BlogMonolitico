@@ -6,9 +6,9 @@ metadata:
   namespace: blog
 data:
   LOG_LEVEL: 'info'
-  USERS_SERVICE_URL: 'http://user.blog.svc.cluster.local:8080'
+  USER_SERVICE_URL: 'http://user.blog.svc.cluster.local:8080'
   POST_SERVICE_URL: 'http://post.blog.svc.cluster.local:8080'
-  COMMENTS_SERVICE_URL: 'http://comments.blog.svc.cluster.local:8080' # corregido
+  COMMENTS_BASE: 'http://comments.blog.svc.cluster.local:8080' # corregido
 
   # Configuración pública de Firebase para frontend
   FIREBASE_API_KEY: 'AIzaSyDFiuc4X6_uIQq2DzbaKxrxQ-7sIzSX7s4'

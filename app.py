@@ -35,7 +35,7 @@ def create_app(config_override=None):
     # Inicializar Firebase Admin si aún no está inicializado
     try:
         if not firebase_admin._apps:
-            cred_path = app.config.get("FIREBASE_ADMIN_CREDENTIALS")
+            cred_path = app.config.get("FIREBASE_ADMIN_CREDENTIALS_POSTS")
 
             if cred_path and os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)
