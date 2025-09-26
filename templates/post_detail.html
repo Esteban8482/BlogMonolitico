@@ -42,7 +42,7 @@
   <section class="comments">
     <h2>
       Comentarios (
-      {% if comments is defined %}
+      {% if comments %}
       {{ comments|length }}
       {% else %}
       {{post.comments|length }}
@@ -62,7 +62,7 @@
     {% endif %}
 
     <ul class="comment-list">
-      {% if comments is defined %}
+      {% if comments %}
       {# --- Comentarios desde microservicio --- #}
       {% for c in comments%}
       <li>

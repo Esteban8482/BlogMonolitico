@@ -38,11 +38,13 @@ def add_comment(post_id: str):
 
     if not content:
         flash("Comentario vacío", "danger")
+        return redirect(url_for("post.post_detail", post_id=post.id))
     else:
         comment = create_comment(post_id, content, username=session.get("username"))
 
         if not comment:
             flash("Error al agregar el comentario", "danger")
+            return redirect(url_for("post.post_detail", post_id=post.id))
 
         flash("Comentario agregado", "success")
 
@@ -55,8 +57,13 @@ def delete_comment(comment_id: str):
     try:
         comment = get_comment_or_404(str(comment_id))
 
+        if not comment:
+            flash("Comentario no encontrado", "danger")
+            return redirect(url_for("post.post_detail", post_id=comment.post_id))
+
         if not is_comment_owner_or_post_owner(comment):
-            abort(403)
+            flash("No tienes permiso para eliminar este comentario", "danger")
+            return redirect(url_for("post.post_detail", post_id=comment.post_id))
 
         post_id = str(comment.post_id)
         delete_comment_service(comment)
