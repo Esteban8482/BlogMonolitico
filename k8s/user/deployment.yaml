@@ -1,0 +1,57 @@
+# k8s/user/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: blog # Namespace para agrupar todos los recursos del proyecto
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user # Etiquetas de los pods que gestionará este Deployment
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      # Configuración de contenedores
+      # Imagen, puertos expuestos, variables de entorno
+      containers:
+        - name: user
+          image: blog/user:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5002
+          env:
+            - name: FIREBASE_ADMIN_CREDENTIALS
+              value: /var/secrets/firebase/serviceAccountKey.json
+
+          # Variable de entorno que apunta a la ruta del secreto montado
+          # Importar variables adicionales desde un ConfigMap
+          envFrom:
+            - configMapRef:
+                name: blog-config
+
+          # Montar el secreto con credenciales de Firebase en modo solo lectura
+          volumeMounts:
+            - name: firebase-key
+              mountPath: /var/secrets/firebase
+              readOnly: true
+
+          # Verificar si el servicio está listo para recibir tráfico
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5002
+            initialDelaySeconds: 5
+
+          # Verifica periódicamente que el contenedor siga vivo
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 5002
+            initialDelaySeconds: 15
+      volumes:
+        - name: firebase-key
+          secret:
+            secretName: firebase-user # Secreto de Kubernetes que contiene la clave de Firebase

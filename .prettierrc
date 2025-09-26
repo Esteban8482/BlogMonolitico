@@ -1,0 +1,21 @@
+{
+  "tabWidth": 2,
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 100,
+  "trailingComma": "es5",
+  "overrides": [
+    {
+      "files": "static/**/*.css",
+      "options": {
+        "parser": "css"
+      }
+    },
+    {
+      "files": "static/**/*.js",
+      "options": {
+        "parser": "babel"
+      }
+    }
+  ]
+}

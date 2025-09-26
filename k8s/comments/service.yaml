@@ -1,0 +1,17 @@
+# k8s/comments/service.yaml
+apiVersion: v1
+kind: Service
+
+# Namespace donde se desplegará el servicio
+metadata:
+  name: comments
+  namespace: blog
+
+spec:
+  selector:
+    app: comments # Selecciona los pods comments
+  ports:
+    - name: http
+      port: 8080 # Puerto expuesto dentro del cluster
+      targetPort: 8091 # Puerto real en el contenedor donde escucha la app
+  type: ClusterIP # Tipo de servicio: accesible solo dentro del cluster

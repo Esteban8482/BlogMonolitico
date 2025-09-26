@@ -58,6 +58,10 @@ def post_detail(post_id: str):
 
     try:
         comments = list_comments(post.id)
+
+        if comments is None:
+            comments = []
+            flash("Error al obtener los comentarios", "danger")
     except:
         flash("Error al obtener los comentarios", "danger")
 

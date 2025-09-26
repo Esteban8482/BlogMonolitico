@@ -2,6 +2,9 @@
 .editor-toolbar {
   background-color: #f6f8fa !important;
   border: 1px solid #d0d7de;
+  position: sticky;
+  top: 4rem;
+  z-index: 100;
 }
 
 .editor-toolbar button {
@@ -62,6 +65,7 @@
 }
 
 .markdown-body code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   background-color: #f6f8fa;
   color: #24292e;
   padding: 0.2em 0.4em;

@@ -20,6 +20,9 @@ import requests
 from config import ServicesConfig
 from helpers import current_user
 from dtos import UserDto
+from log import logger
+
+_TIMEOUT = 5
 
 
 def _headers_for_user(user_id: str = None):
@@ -46,6 +49,7 @@ def create_user_profile(user_id: str, username: str) -> Optional[UserDto]:
         req = requests.post(
             f"{ServicesConfig.USER_SERVICE_URL}/u/new",
             json={"id": str(user_id), "username": username.strip()},
+            timeout=_TIMEOUT,
         )
 
         return UserDto.from_json(req.json()["data"])
@@ -67,6 +71,7 @@ def get_user_profile(username: str) -> Optional[UserDto]:
         req = requests.get(
             f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
             headers=_headers_for_user(),
+            timeout=_TIMEOUT,
         )
 
         return UserDto.from_json(req.json()["data"])
@@ -90,6 +95,7 @@ def update_user_profile(username: str, bio: str) -> bool:
             f"{ServicesConfig.USER_SERVICE_URL}/u/{username}",
             headers=_headers_for_user(),
             json={"bio": bio.strip()},
+            timeout=_TIMEOUT,
         )
 
         return req.status_code >= 200 and req.status_code < 300
@@ -99,11 +105,19 @@ def update_user_profile(username: str, bio: str) -> bool:
 
 def exist_user(user_id: str, username) -> bool:
     try:
+        url = f"{ServicesConfig.USER_SERVICE_URL}/u/exists"
+
+        logger.info(f"======== Buscando usuario ========\n{user_id=}\n{username=}\n")
+
         req = requests.get(
-            f"{ServicesConfig.USER_SERVICE_URL}/u/exists",
+            url,
             json={"id": user_id, "username": username},
+            timeout=_TIMEOUT,
         )
 
+        logger.info(f"======== Buscando usuario ========\n{req.status_code=}\n")
+
         return req.status_code >= 200 and req.status_code < 300
-    except:
+    except Exception as e:
+        logger.error(f"======== Error al buscar el usuario ========\n{e}\n")
         return False

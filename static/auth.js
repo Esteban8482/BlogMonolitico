@@ -5,199 +5,206 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-(function () {
-  window.__SERVER_SESSION_OK__ = false;
+} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js'
+;(function () {
+  window.__SERVER_SESSION_OK__ = false
 
   function getFirebaseAuth() {
-    if (!window.__FIREBASE_CONFIG__ || !window.__FIREBASE_APP_READY__)
-      return null;
+    if (!window.__FIREBASE_CONFIG__ || !window.__FIREBASE_APP_READY__) return null
     try {
-      return getAuth();
+      return getAuth()
     } catch (e) {
-      console.error(e);
-      return null;
+      console.error(e)
+      return null
     }
   }
 
   async function syncSession(idToken) {
-    if (!idToken) return false;
+    if (!idToken) return false
 
     try {
-      const res = await fetch("/auth/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
-      });
+      })
 
-      if (!res.ok) return false;
-      const json = await res.json();
-      return !!(json && json.ok);
+      if (!res.ok) {
+        console.error(res)
+        sessionStorage.clear()
+        localStorage.clear()
+        window.location.href = '/login'
+        return false
+      }
+
+      const json = await res.json()
+      return !!(json && json.ok)
     } catch {
-      return false;
+      return false
     }
   }
 
   function updateNav(user) {
-    const logoutLink = document.getElementById("logout-link");
-    if (!logoutLink) return;
+    const logoutLink = document.getElementById('logout-link')
+    if (!logoutLink) return
 
-    logoutLink.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const auth = getFirebaseAuth();
-      if (!auth) return;
+    logoutLink.addEventListener('click', async (e) => {
+      e.preventDefault()
+      const auth = getFirebaseAuth()
+      if (!auth) return
 
       try {
-        await signOut(auth);
+        await signOut(auth)
       } catch (err) {
-        alert("Error al cerrar sesión: " + err.message);
+        alert('Error al cerrar sesión: ' + err.message)
       }
 
-      await fetch("/auth/logout", { method: "POST" });
-      window.location.href = "/login";
-    });
+      await fetch('/auth/logout', { method: 'POST' })
+      window.location.href = '/login'
+    })
   }
 
   function currentPath() {
-    return window.location.pathname;
+    return window.location.pathname
   }
 
   function pathRequiresAuth(path) {
     return (
-      path === "/me" ||
-      path === "/post/new" ||
+      path === '/me' ||
+      path === '/post/new' ||
       /^\/post\/\d+\/(edit|delete|comment)$/.test(path) ||
       /^\/comment\/\d+\/delete$/.test(path)
-    );
+    )
   }
 
   function redirectUnauthedToLogin(user) {
-    const path = currentPath();
-    const isLoginPage = path === "/login";
-    const isAuthEndpoint = path.startsWith("/auth/");
+    const path = currentPath()
+    const isLoginPage = path === '/login'
+    const isAuthEndpoint = path.startsWith('/auth/')
 
     if (!user && !isLoginPage && !isAuthEndpoint && pathRequiresAuth(path)) {
-      const next = encodeURIComponent(window.location.href);
-      window.location.replace(`/login?next=${next}`);
-      return true;
+      const next = encodeURIComponent(window.location.href)
+      window.location.replace(`/login?next=${next}`)
+      return true
     }
 
-    return false;
+    return false
   }
 
   async function signInWithGoogleFlow() {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
+    const provider = new GoogleAuthProvider()
+    provider.setCustomParameters({ prompt: 'select_account' })
 
-    const auth = getFirebaseAuth();
-    const statusEl = document.getElementById("login-status");
+    const auth = getFirebaseAuth()
+    const statusEl = document.getElementById('login-status')
 
     if (!auth) {
-      const msg = window.__FIREBASE_INIT_ERROR__ || "";
+      const msg = window.__FIREBASE_INIT_ERROR__ || ''
+
       if (statusEl) {
-        statusEl.textContent = "Error Interno al crear la sesión. " + msg;
-        statusEl.style.color = "#b00020";
+        statusEl.textContent = 'Error Interno al crear la sesión. ' + msg
+        statusEl.style.color = '#b00020'
       }
-      return;
+
+      return
     }
 
     try {
-      const cred = await signInWithPopup(auth, provider);
-      const idToken = await cred.user.getIdToken();
-      sessionStorage.setItem("firebaseIdToken", idToken);
+      const cred = await signInWithPopup(auth, provider)
+      const idToken = await cred.user.getIdToken()
+      sessionStorage.setItem('firebaseIdToken', idToken)
 
-      const ok = await syncSession(idToken);
-      window.__SERVER_SESSION_OK__ = ok;
+      const ok = await syncSession(idToken)
+      window.__SERVER_SESSION_OK__ = ok
 
       if (!ok) {
         if (statusEl) {
-          statusEl.textContent =
-            "Error Interno al crear la sesión. Intenta de nuevo.";
-          statusEl.style.color = "#b00020";
+          statusEl.textContent = 'Error Interno al crear la sesión. Intenta de nuevo.'
+          statusEl.style.color = '#b00020'
         }
-        return;
+        return
       }
 
-      const nextUrl = new URLSearchParams(window.location.search).get("next");
-      window.location.replace(nextUrl || "/");
+      const nextUrl = new URLSearchParams(window.location.search).get('next')
+      window.location.replace(nextUrl || '/')
     } catch (err) {
-      alert("No se pudo iniciar sesión con Google: " + err.message);
+      alert('No se pudo iniciar sesión con Google: ' + err.message)
     }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const auth = getFirebaseAuth();
-    const googleBtn = document.getElementById("google-signin");
+  document.addEventListener('DOMContentLoaded', () => {
+    const auth = getFirebaseAuth()
+    const googleBtn = document.getElementById('google-signin')
 
     if (googleBtn) {
       if (!auth) {
-        googleBtn.disabled = true;
-        googleBtn.dataset.label = googleBtn.innerText;
-        googleBtn.innerText = "Preparando Google…";
+        googleBtn.disabled = true
+        googleBtn.dataset.label = googleBtn.innerText
+        googleBtn.innerText = 'Preparando Google…'
       }
 
-      googleBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        signInWithGoogleFlow();
-      });
+      googleBtn.addEventListener('click', (e) => {
+        e.preventDefault()
+        signInWithGoogleFlow()
+      })
     }
 
     if (!auth && googleBtn) {
-      let retries = 20;
+      let retries = 20
       const iv = setInterval(() => {
-        const a = getFirebaseAuth();
+        const a = getFirebaseAuth()
+
         if (a) {
-          clearInterval(iv);
-          googleBtn.disabled = false;
-          googleBtn.innerText =
-            googleBtn.dataset.label || "Continuar con Google";
+          clearInterval(iv)
+
+          googleBtn.disabled = false
+          googleBtn.innerText = googleBtn.dataset.label || 'Continuar con Google'
         } else if (--retries <= 0) {
-          clearInterval(iv);
-          googleBtn.disabled = false;
-          googleBtn.innerText =
-            googleBtn.dataset.label || "Continuar con Google";
+          clearInterval(iv)
+
+          googleBtn.disabled = false
+          googleBtn.innerText = googleBtn.dataset.label || 'Continuar con Google'
         }
-      }, 500);
+      }, 500)
     }
 
     if (auth) {
       onAuthStateChanged(auth, async (user) => {
-        window.__SERVER_SESSION_OK__ = false;
-        updateNav(user);
+        window.__SERVER_SESSION_OK__ = false
+        updateNav(user)
 
         if (user) {
-          const idToken = await user.getIdToken();
-          sessionStorage.setItem("firebaseIdToken", idToken);
+          const idToken = await user.getIdToken()
+          sessionStorage.setItem('firebaseIdToken', idToken)
 
-          const ok = await syncSession(idToken);
-          window.__SERVER_SESSION_OK__ = ok;
+          const ok = await syncSession(idToken)
+          window.__SERVER_SESSION_OK__ = ok
 
-          if (currentPath() === "/login") {
+          if (currentPath() === '/login') {
             if (ok) {
-              const nextUrl = new URLSearchParams(window.location.search).get(
-                "next"
-              );
-              window.location.replace(nextUrl || "/");
+              const nextUrl = new URLSearchParams(window.location.search).get('next')
+              window.location.replace(nextUrl || '/')
             } else {
-              const statusEl = document.getElementById("login-status");
+              const statusEl = document.getElementById('login-status')
+
               if (statusEl) {
-                statusEl.textContent = "Error Interno al crear la sesión.";
-                statusEl.style.color = "#b00020";
+                statusEl.textContent = 'Error Interno al crear la sesión.'
+                statusEl.style.color = '#b00020'
               }
             }
           }
         } else {
-          sessionStorage.removeItem("firebaseIdToken");
-          await fetch("/auth/logout", { method: "POST" }).catch(() => {});
-          window.__SERVER_SESSION_OK__ = false;
-          redirectUnauthedToLogin(user);
+          sessionStorage.removeItem('firebaseIdToken')
+
+          await fetch('/auth/logout', { method: 'POST' }).catch(() => {})
+          window.__SERVER_SESSION_OK__ = false
+          redirectUnauthedToLogin(user)
         }
-      });
+      })
     } else {
-      updateNav(null);
+      updateNav(null)
     }
 
-    window.firebaseLoginWithGoogle = signInWithGoogleFlow;
-  });
-})();
+    window.firebaseLoginWithGoogle = signInWithGoogleFlow
+  })
+})()

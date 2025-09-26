@@ -19,6 +19,9 @@ from flask import Flask
 from db_connector import db_check_post_firestore_connection, db_init_post_firestore
 from config import Config
 from log import logger
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def create_app(config_override=None, init_db=True):
@@ -36,6 +39,14 @@ def create_app(config_override=None, init_db=True):
     from routes import post_api
 
     app.register_blueprint(post_api)
+    
+    @app.get("/health")
+    def health():
+        return {"status": "ok"}
+    
+    @app.get("/live")
+    def live():
+        return {"status": "ok"}
 
     return app
 
@@ -54,4 +65,4 @@ def ensure_db():
 if __name__ == "__main__":
     app = create_app()
     ensure_db()
-    app.run(debug=True, port=5003, use_reloader=True)
+    app.run(host="0.0.0.0", debug=True, port=5003, use_reloader=True)

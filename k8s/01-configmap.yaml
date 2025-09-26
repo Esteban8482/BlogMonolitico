@@ -1,0 +1,20 @@
+# k8s/01-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-config
+  namespace: blog
+data:
+  LOG_LEVEL: 'info'
+  USER_SERVICE_URL: 'http://user.blog.svc.cluster.local:8080'
+  POST_SERVICE_URL: 'http://post.blog.svc.cluster.local:8080'
+  COMMENTS_BASE: 'http://comments.blog.svc.cluster.local:8080/v1'
+
+  # Configuración pública de Firebase para frontend
+  FIREBASE_API_KEY: 'AIzaSyDFiuc4X6_uIQq2DzbaKxrxQ-7sIzSX7s4'
+  FIREBASE_AUTH_DOMAIN: 'chatdistribuido-6d4ed.firebaseapp.com'
+  FIREBASE_PROJECT_ID: 'chatdistribuido-6d4ed'
+  FIREBASE_STORAGE_BUCKET: 'chatdistribuido-6d4ed.firebasestorage.app'
+  FIREBASE_MESSAGING_SENDER_ID: '906064184156'
+  FIREBASE_APP_ID: '1:906064184156:web:100eaa405c262b97417799'
+  FIREBASE_MEASUREMENT_ID: 'G-V0Z5L0PVB5'

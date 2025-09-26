@@ -1,37 +1,40 @@
 {% extends 'layout.html' %} {% block title %}Perfil {{ profile_user.username }}{% endblock %} {%
 block content %}
 
-<h1>Perfil de {{ profile_user.username }}</h1>
+<div class="container">
+  <h1>Perfil de {{ profile_user.username }}</h1>
 
-<div class="profile-box">
-  <p><strong>Miembro desde:</strong> {{ profile_user.created_at.strftime('%Y-%m-%d') }}</p>
+  <div class="profile-box">
+    <p><strong>Miembro desde:</strong> {{ profile_user.created_at.strftime('%Y-%m-%d') }}</p>
 
-  <form method="post" class="form">
-    {% if current_user and current_user.id|string == profile_user.id|string %}
-    <label
-      >Biografía
-      <textarea name="bio" rows="4">{{ profile_user.bio }}</textarea>
-    </label>
+    <form method="post" class="form">
+      {% if current_user and current_user.id|string == profile_user.id|string %}
+      <label
+        >Biografía
+        <textarea name="bio" rows="4">{{ profile_user.bio }}</textarea>
+      </label>
 
-    <button type="submit">Guardar</button>
+      <button type="submit">Guardar</button>
 
+      {% else %}
+      <p>{{ profile_user.bio or 'Sin biografía.' }}</p>
+      {% endif %}
+    </form>
+  </div>
+
+  <h2>Publicaciones</h2>
+
+  <ul class="post-list">
+    {% for p in posts %}
+    <li>
+      <a href="{{ url_for('post.post_detail', post_id=p.id) }}">{{ p.title }}</a>
+      <small>{{ p.created_at.strftime('%Y-%m-%d') }}</small>
+    </li>
     {% else %}
-    <p>{{ profile_user.bio or 'Sin biografía.' }}</p>
-    {% endif %}
-  </form>
+
+    <li>No hay publicaciones.</li>
+    {% endfor %}
+  </ul>
 </div>
 
-<h2>Publicaciones</h2>
-
-<ul class="post-list">
-  {% for p in posts %}
-  <li>
-    <a href="{{ url_for('post.post_detail', post_id=p.id) }}">{{ p.title }}</a>
-    <small>{{ p.created_at.strftime('%Y-%m-%d') }}</small>
-  </li>
-  {% else %}
-
-  <li>No hay publicaciones.</li>
-  {% endfor %}
-</ul>
 {% endblock %}

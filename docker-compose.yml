@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  monolith:
+    build:
+      context: .
+    image: blog-monolith:dev
+    container_name: monolith
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    environment:
+      # URLs used by monolith to call microservices
+      USER_SERVICE_URL: http://user-service:5002
+      POST_SERVICE_URL: http://post-service:5003
+      COMMENTS_BASE: http://comments-service:8091/v1
+      # Firebase Admin credentials for monolith (Auth)
+      FIREBASE_ADMIN_CREDENTIALS: /run/secrets/firebase_admin_monolith.json
+      # Optional Firebase frontend config can be passed here if needed
+      # FIREBASE_API_KEY: ""
+    volumes:
+      - type: bind
+        source: ./firebase-admin.json
+        target: /run/secrets/firebase_admin_monolith.json
+        read_only: true
+    depends_on:
+      - user-service
+      - post-service
+      - comments-service
+
+  user-service:
+    build:
+      context: ./microservices/user
+    image: blog-user:dev
+    container_name: user-service
+    ports:
+      - "5002:5002"
+    environment:
+      FIREBASE_ADMIN_CREDENTIALS: /run/secrets/firebase_user.json
+    volumes:
+      - type: bind
+        source: ./microservices/user/firestore_user.json
+        target: /run/secrets/firebase_user.json
+        read_only: true
+
+  post-service:
+    build:
+      context: ./microservices/post
+    image: blog-post:dev
+    container_name: post-service
+    ports:
+      - "5003:5003"
+    environment:
+      FIREBASE_ADMIN_CREDENTIALS_POSTS: /run/secrets/firebase_post.json
+    volumes:
+      - type: bind
+        source: ./microservices/post/firestore_post.json
+        target: /run/secrets/firebase_post.json
+        read_only: true
+
+  comments-service:
+    build:
+      context: ./microservices/comments-service
+    image: blog-comments:dev
+    container_name: comments-service
+    ports:
+      - "8091:8091"
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase_comments.json
+    volumes:
+      - type: bind
+        source: ./microservices/comments-service/commentservice-e0a2f-93c6325f974b.json
+        target: /run/secrets/firebase_comments.json
+        read_only: true
+
+networks:
+  default:
+    name: blognet

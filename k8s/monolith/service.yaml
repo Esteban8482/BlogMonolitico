@@ -1,0 +1,14 @@
+# k8s/monolith/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: monolith
+  namespace: blog
+spec:
+  selector:
+    app: monolith
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP # LoadBalancer

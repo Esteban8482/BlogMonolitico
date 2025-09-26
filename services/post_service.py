@@ -20,6 +20,9 @@ import requests
 from config import ServicesConfig
 from helpers import current_user
 from dtos import PostDto
+from log import logger
+
+_TIMEOUT = 5
 
 
 def _headers_for_user(user_id: str = None):
@@ -52,6 +55,7 @@ def create_post(username: str, title: str, content: str) -> Optional[PostDto]:
                 "content": content.strip(),
                 "username": username,
             },
+            timeout=_TIMEOUT,
         )
 
         post = PostDto.from_json(post_rq.json()["data"])
@@ -74,6 +78,7 @@ def get_post(post_id: str) -> Optional[PostDto]:
         post_rq = requests.get(
             f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}",
             headers=_headers_for_user(),
+            timeout=_TIMEOUT,
         )
         return PostDto.from_json(post_rq.json()["data"])
     except:
@@ -100,6 +105,7 @@ def update_post(post_id: str, title: str, content: str) -> Optional[PostDto]:
                 "title": title.strip(),
                 "content": content.strip(),
             },
+            timeout=_TIMEOUT,
         )
 
         return PostDto.from_json(post_req.json()["data"])
@@ -121,6 +127,7 @@ def delete_post_by_id(post_id: str) -> bool:
         post_req = requests.post(
             f"{ServicesConfig.POST_SERVICE_URL}/post/{post_id}/delete",
             headers=_headers_for_user(),
+            timeout=_TIMEOUT,
         )
 
         return post_req.status_code >= 200 and post_req.status_code < 300
@@ -140,7 +147,8 @@ def get_user_posts(user_id) -> Optional[List[PostDto]]:
     """
     try:
         post_req = requests.get(
-            f"{ServicesConfig.POST_SERVICE_URL}/post/user/{user_id}"
+            f"{ServicesConfig.POST_SERVICE_URL}/post/user/{user_id}",
+            timeout=_TIMEOUT,
         )
 
         data = post_req.json()["data"]
@@ -164,8 +172,12 @@ def get_post_limit(limit: int, title: str) -> Optional[List[PostDto]]:
         Optional[List[PostDto]]: La lista de posts del usuario, o None si no se pudo obtener los posts.
     """
     try:
+        url = f"{ServicesConfig.POST_SERVICE_URL}/post/limit/{limit}?title={title}"
+        logger.info(f"======== Obteniendo posts ========\n{url=}\n")
+
         post_req = requests.get(
-            f"{ServicesConfig.POST_SERVICE_URL}/post/limit/{limit}?title={title}"
+            url,
+            timeout=_TIMEOUT,
         )
 
         data = post_req.json()["data"]
@@ -174,5 +186,6 @@ def get_post_limit(limit: int, title: str) -> Optional[List[PostDto]]:
             return []
 
         return [PostDto.from_json(post) for post in post_req.json()["data"]]
-    except:
+    except Exception as e:
+        logger.error(f"======== Error al obtener los posts ========\n{e}\n")
         return None

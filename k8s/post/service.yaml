@@ -1,0 +1,14 @@
+# k8s/post/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: post
+  namespace: blog # Namespace donde se desplegará el servicio
+spec:
+  selector:
+    app: post # Selecciona los pods post
+  ports:
+    - name: http
+      port: 8080 # Puerto expuesto dentro del cluster
+      targetPort: 5003 # Puerto real en el contenedor donde escucha la app
+  type: ClusterIP # Tipo de servicio: accesible solo dentro del cluster

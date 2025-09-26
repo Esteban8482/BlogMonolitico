@@ -1,0 +1,54 @@
+# k8s/comments/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comments
+  namespace: blog # Namespace para agrupar todos los recursos del proyecto
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: comments # Etiqueta que identifica a los pods de este Deployment
+  template:
+    metadata:
+      labels:
+        app: comments
+    spec:
+      # Configuración de contenedores
+      # Imagen, puertos expuestos, variables de entorno
+      containers:
+        - name: comments
+          image: blog/comments:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8091
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/firebase/serviceAccountKey.json
+          envFrom:
+            - configMapRef:
+                name: blog-config # Importar variables adicionales desde un ConfigMap
+
+          # Montar el secreto con credenciales de Firebase en modo solo lectura
+          volumeMounts:
+            - name: firebase-key
+              mountPath: /var/secrets/firebase
+              readOnly: true
+
+          # Verificar si el servicio está listo para recibir tráfico
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8091
+            initialDelaySeconds: 5
+
+          # Verifica periódicamente que el contenedor siga vivo
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8091
+            initialDelaySeconds: 15
+      volumes:
+        - name: firebase-key
+          secret:
+            secretName: firebase-comments # Secreto de Kubernetes que contiene la clave de Firebase

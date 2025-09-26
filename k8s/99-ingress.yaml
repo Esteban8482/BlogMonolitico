@@ -1,0 +1,51 @@
+# k8s/99-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: blog-ingress
+  namespace: blog
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: blog.local # Agregar en /etc/hosts -> 127.0.0.1 blog.local
+      http:
+        paths:
+          # punto de entrada principal -> monolith
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: monolith
+                port:
+                  number: 5000
+
+          # /api/users/... -> backend user-service
+          - path: /api/users(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: user
+                port:
+                  number: 8080
+
+          # /api/posts/... -> backend post-service
+          - path: /api/posts(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: post
+                port:
+                  number: 8080
+
+          # /api/comments/... -> backend comments-service
+          - path: /api/comments(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: comments
+                port:
+                  number: 8080
